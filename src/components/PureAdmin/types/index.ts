@@ -1,0 +1,33 @@
+export type {
+  DescriptionsAlign,
+  DescriptionsColumn,
+  DescriptionsLoading,
+  DescriptionsRenderContext,
+  PureDescriptionsProps,
+} from '../descriptions/types';
+
+export type {
+  AdaptiveConfig,
+  Align,
+  DefaultLanguage,
+  Effect,
+  I18nLike,
+  Language,
+  Layout,
+  LoadingConfig,
+  PaginationProps,
+  PureTableInstallOptions,
+  PureTableProps,
+  Size,
+  TableColumn,
+  TableColumnFilterPlacement,
+  TableColumnFixed,
+  TableColumnRenderer,
+  TableColumns,
+  TableColumnScope,
+  TableColumnSortOrders,
+  TableColumnSortable,
+  TableColumnType,
+  TableProps,
+  TranslatePair,
+} from '../table/types';

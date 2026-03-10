@@ -1,0 +1,430 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { useAssessment } from '../composables/useAssessment';
+import { useScoring } from '../composables/useScoring';
+import { useLtciAssessmentStore } from '@/store/modules/ltci-assessment';
+
+defineOptions({ name: 'Step4ResultConfirm' });
+
+const emit = defineEmits<{ confirmed: [] }>();
+
+const {
+  basicInfo,
+  assessmentId,
+  files,
+  selfAssessmentData,
+  assessmentItems,
+  submittedAssessment,
+  aiSuggestion,
+  aiSuggestionLoading,
+  setStep,
+  buildSavePayload,
+  submitCurrentAssessment,
+  generateCurrentAiSuggestion,
+  fetchCurrentAiSuggestion,
+} = useAssessment();
+const { calculateResult, getSummaryText } = useScoring(
+  assessmentItems,
+  files,
+  selfAssessmentData
+);
+const submitLoading = ref(false);
+
+const result = computed(() => calculateResult());
+const displayResult = computed(() => {
+  if (submittedAssessment.value) {
+    return {
+      gradedCount: submittedAssessment.value.itemCount,
+      avgGrade: submittedAssessment.value.finalScore,
+      disabilityLevel: submittedAssessment.value.finalGrade,
+    };
+  }
+  return result.value;
+});
+const summaryText = computed(() => getSummaryText(basicInfo, submittedAssessment.value));
+const canGenerateAi = computed(
+  () => !!assessmentId.value && files.selfAssessment.length > 0 && files.medical.length > 0,
+);
+const formattedAiSuggestion = computed(() => {
+  const content = aiSuggestion.value?.suggestion;
+  if (!content) return '';
+  try {
+    return JSON.stringify(JSON.parse(content), null, 2);
+  } catch {
+    return content;
+  }
+});
+
+const levelTagType = computed(() => {
+  const level = displayResult.value.disabilityLevel;
+  if (level.includes('重度')) {
+    return 'danger';
+  }
+  switch (level) {
+    case '轻度失能':
+      return 'warning';
+    case '中度失能':
+      return 'danger';
+    default:
+      return 'info';
+  }
+});
+
+function handlePrint() {
+  window.print();
+}
+
+function handleExport() {
+  ElMessage.info('PDF 导出功能开发中，敬请期待');
+}
+
+function handleRefresh() {
+  ElMessage.success('评估结论已刷新');
+}
+
+async function handleGenerateAi() {
+  try {
+    await generateCurrentAiSuggestion();
+    ElMessage.success('AI 建议已生成');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'AI 建议生成失败';
+    ElMessage.error(message);
+  }
+}
+
+async function handleFetchAi() {
+  try {
+    await fetchCurrentAiSuggestion();
+    ElMessage.success('AI 建议已加载');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '加载 AI 建议失败';
+    ElMessage.error(message);
+  }
+}
+
+async function handleConfirm() {
+  try {
+    await ElMessageBox.confirm(
+      '确认提交本次评估结果？提交后将生成正式评估报告。',
+      '确认提交',
+      {
+        confirmButtonText: '确认提交',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+  } catch {
+    return;
+  }
+  submitLoading.value = true;
+  try {
+    const submitted = await submitCurrentAssessment();
+    try {
+      // 历史记录暂无正式列表接口，这里仅做兼容保存，不影响正式提交流程。
+      await useLtciAssessmentStore().save(buildSavePayload());
+    } catch {
+      // 历史记录接口是兼容能力，不影响正式提交结果。
+    }
+    setStep(4);
+    emit('confirmed');
+    ElMessage.success(`评估结果已成功提交：${submitted.finalGrade}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '提交失败，请稍后重试';
+    ElMessage.error(message);
+  } finally {
+    submitLoading.value = false;
+  }
+}
+
+function handleBack() {
+  setStep(3);
+}
+</script>
+
+<template>
+  <div class="result-card">
+    <div class="card-header">
+      <el-icon class="card-header__icon"><DocumentChecked /></el-icon>
+      <h2>评估结果确认</h2>
+
+      <div class="card-header__actions">
+        <el-button size="small" plain @click="handleRefresh">
+          <el-icon><Refresh /></el-icon>
+          刷新汇总
+        </el-button>
+        <el-button size="small" plain @click="handleExport">
+          <el-icon><Download /></el-icon>
+          导出PDF
+        </el-button>
+        <el-button size="small" plain @click="handlePrint">
+          <el-icon><Printer /></el-icon>
+          打印报告
+        </el-button>
+      </div>
+    </div>
+
+    <!-- Grade summary banner -->
+    <div class="grade-banner" v-if="displayResult.gradedCount > 0">
+      <div class="grade-banner__item">
+        <span class="grade-banner__value">{{ displayResult.gradedCount }}</span>
+        <span class="grade-banner__label">已评估项目</span>
+      </div>
+      <div class="grade-banner__divider" />
+      <div class="grade-banner__item">
+        <span class="grade-banner__value">{{ displayResult.avgGrade.toFixed(1) }}</span>
+        <span class="grade-banner__label">综合得分</span>
+      </div>
+      <div class="grade-banner__divider" />
+      <div class="grade-banner__item">
+        <el-tag :type="levelTagType" size="large" effect="dark">
+          {{ displayResult.disabilityLevel }}
+        </el-tag>
+        <span class="grade-banner__label">失能等级</span>
+      </div>
+    </div>
+
+    <!-- Summary text content -->
+    <div class="summary-body">
+      <h3 class="summary-body__title">
+        <el-icon><Memo /></el-icon>
+        评估结论汇总
+      </h3>
+      <pre class="summary-body__content">{{ summaryText }}</pre>
+    </div>
+
+    <div class="summary-body">
+      <h3 class="summary-body__title">
+        <el-icon><MagicStick /></el-icon>
+        AI 智能评估建议
+      </h3>
+      <div class="summary-body__toolbar">
+        <el-button
+          type="primary"
+          :loading="aiSuggestionLoading"
+          :disabled="!canGenerateAi"
+          @click="handleGenerateAi"
+        >
+          <el-icon><Promotion /></el-icon>
+          {{ aiSuggestion ? '重新生成 AI 建议' : '生成 AI 建议' }}
+        </el-button>
+        <el-button
+          :loading="aiSuggestionLoading"
+          :disabled="!assessmentId"
+          @click="handleFetchAi"
+        >
+          <el-icon><Refresh /></el-icon>
+          查询已生成建议
+        </el-button>
+        <span v-if="!canGenerateAi" class="summary-body__hint">
+          需先上传客户自评表和医疗材料后才能生成 AI 建议
+        </span>
+      </div>
+      <div v-if="aiSuggestion" class="ai-result">
+        <div class="ai-result__meta">
+          <span>生成时间：{{ new Date(aiSuggestion.createTime).toLocaleString('zh-CN') }}</span>
+          <span>Token：{{ aiSuggestion.totalTokens }}</span>
+          <span v-if="aiSuggestion.finishReason">结束原因：{{ aiSuggestion.finishReason }}</span>
+        </div>
+        <pre class="summary-body__content ai-result__content">{{ formattedAiSuggestion }}</pre>
+      </div>
+      <div v-else class="summary-body__empty">
+        暂未生成 AI 建议
+      </div>
+    </div>
+
+    <!-- Action footer -->
+    <div class="result-footer">
+      <el-button @click="handleBack">
+        <el-icon><ArrowLeft /></el-icon>
+        返回修改
+      </el-button>
+      <el-button
+        type="primary"
+        :disabled="result.gradedCount < assessmentItems.length"
+        :loading="submitLoading"
+        @click="handleConfirm"
+      >
+        <el-icon><CircleCheck /></el-icon>
+        确认提交结果
+      </el-button>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.result-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #1e6bb8 0%, #2d7fc7 100%);
+  color: #fff;
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+
+    .el-button {
+      --el-button-text-color: #fff;
+      --el-button-border-color: rgba(255, 255, 255, 0.5);
+      --el-button-bg-color: transparent;
+      --el-button-hover-text-color: #fff;
+      --el-button-hover-border-color: #fff;
+      --el-button-hover-bg-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+// ── Grade banner ────────────────────────────────────────────────────────────
+
+.grade-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 24px 32px;
+  background: #f8faff;
+  border-bottom: 1px solid #e8f4fc;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    text-align: center;
+  }
+
+  &__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e6bb8;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 12px;
+    color: #999;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 40px;
+    background: #e8f4fc;
+    flex-shrink: 0;
+  }
+}
+
+// ── Summary body ────────────────────────────────────────────────────────────
+
+.summary-body {
+  padding: 20px 24px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e6bb8;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e8f4fc;
+  }
+
+  &__content {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: #f8fafc;
+    border: 1px solid #e8f4fc;
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 200px;
+    font-family: inherit;
+    margin: 0;
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: #999;
+  }
+
+  &__empty {
+    font-size: 13px;
+    color: #999;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px dashed #d8e6f2;
+    border-radius: 6px;
+  }
+}
+
+.ai-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #666;
+  }
+
+  &__content {
+    min-height: 240px;
+  }
+}
+
+// ── Footer ──────────────────────────────────────────────────────────────────
+
+.result-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f7ff;
+  background: #fafcff;
+}
+
+// ── Print styles ────────────────────────────────────────────────────────────
+
+@media print {
+  .card-header__actions,
+  .result-footer {
+    display: none;
+  }
+}
+</style>

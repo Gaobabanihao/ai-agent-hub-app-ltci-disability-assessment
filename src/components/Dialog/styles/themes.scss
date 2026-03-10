@@ -1,0 +1,20 @@
+.app-dialog--mist {
+  .el-dialog__header {
+    background-color: #e5e7eb;
+  }
+
+  .el-dialog__body {
+    padding-top: 10px;
+  }
+}
+
+.app-dialog--mist-center {
+  .el-dialog__header {
+    background-color: #e5e7eb;
+    text-align: center;
+  }
+
+  .el-dialog__body {
+    padding-top: 10px;
+  }
+}
