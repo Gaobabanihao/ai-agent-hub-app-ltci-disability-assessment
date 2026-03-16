@@ -14,7 +14,7 @@ export interface ResponseData<T = unknown> {
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  timeout: 10000,
+  timeout: 300000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -108,6 +108,8 @@ export function post<T = unknown>(url: string, data?: object, config?: AxiosRequ
 
 // 文件上传统一走 multipart/form-data，避免各业务模块重复设置 headers。
 export function postForm<T = unknown>(url: string, data: FormData, config?: AxiosRequestConfig): Promise<T> {
+  // Let the browser/axios set the multipart boundary automatically.
+  // Setting Content-Type manually can cause missing boundary and lead to 400 errors.
   return request<T>({
     ...config,
     url,
@@ -115,7 +117,6 @@ export function postForm<T = unknown>(url: string, data: FormData, config?: Axio
     data,
     headers: {
       ...(config?.headers ?? {}),
-      'Content-Type': 'multipart/form-data',
     },
   });
 }

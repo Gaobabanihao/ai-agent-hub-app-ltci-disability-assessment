@@ -323,45 +323,46 @@ export function useAssessment() {
     const draftId = await ensureAssessmentDraft();
     const uploadedFiles: FileInfo[] = [];
 
-    for (const file of newFiles) {
-      if (type === 'selfAssessment') {
-        if (!isImageFile(file)) {
-          throw new Error('客户自评表仅支持 JPG、JPEG、PNG 图片，并会在上传后自动 OCR 解析');
-        }
-
-        const parsed = await uploadAndParseSelfAssessment(draftId, file);
-        applyParsedSelfAssessment(parsed.selfAssessment);
-        uploadedFiles.push(
-          toFileInfo(file, {
-            id: parsed.file.id,
-            fileName: parsed.file.fileName,
-          }),
-        );
-        continue;
-      }
-
-      if (type === 'medical') {
-        const uploaded = await uploadMedicalFile(draftId, file);
-        uploadedFiles.push(
-          toFileInfo(file, {
+    if (type === 'medical') {
+      const uploadedResults = await uploadMedicalFile(draftId, newFiles);
+      uploadedFiles.push(
+        ...uploadedResults.map((uploaded, idx) =>
+          toFileInfo(newFiles[idx], {
             id: uploaded.file.id,
             fileName: uploaded.file.fileName,
             fileSize: uploaded.file.fileSize,
             uploadedAt: uploaded.file.uploadedAt,
           }),
-        );
-        continue;
-      }
-
-      const uploaded = await uploadVideoFile(draftId, file);
-      uploadedFiles.push(
-        toFileInfo(file, {
-          id: uploaded.id,
-          fileName: uploaded.fileName,
-          fileSize: uploaded.fileSize,
-          uploadedAt: uploaded.uploadedAt,
-        }),
+        ),
       );
+    } else {
+      for (const file of newFiles) {
+        if (type === 'selfAssessment') {
+          if (!isImageFile(file)) {
+            throw new Error('客户自评表仅支持 JPG、JPEG、PNG 图片，并会在上传后自动 OCR 解析');
+          }
+
+          const parsed = await uploadAndParseSelfAssessment(draftId, file);
+          applyParsedSelfAssessment(parsed.selfAssessment);
+          uploadedFiles.push(
+            toFileInfo(file, {
+              id: parsed.file.id,
+              fileName: parsed.file.fileName,
+            }),
+          );
+          continue;
+        }
+
+        const uploaded = await uploadVideoFile(draftId, file);
+        uploadedFiles.push(
+          toFileInfo(file, {
+            id: uploaded.id,
+            fileName: uploaded.fileName,
+            fileSize: uploaded.file.fileSize,
+            uploadedAt: uploaded.uploadedAt,
+          }),
+        );
+      }
     }
 
     files[type].push(...uploadedFiles);

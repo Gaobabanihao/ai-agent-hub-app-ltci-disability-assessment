@@ -288,10 +288,22 @@ export interface AiSuggestionResult {
   createTime: string;
 }
 
-/** 构造文件上传请求体。 */
+/** 构造文件上传请求体（单文件）。 */
 function createFileFormData(file: File) {
   const formData = new FormData();
   formData.append('file', file);
+  return formData;
+}
+
+/** 构造文件上传请求体（多文件）。
+ *
+ * 后端通常会通过多个同名 `file` 字段接收多个文件。
+ */
+function createFilesFormData(files: File[]) {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('file', file);
+  });
   return formData;
 }
 
@@ -350,11 +362,11 @@ export function uploadAndParseSelfAssessment(assessmentId: number, file: File) {
   );
 }
 
-/** 上传医疗资料文件并返回 OCR 识别结果。 */
-export function uploadMedicalFile(assessmentId: number, file: File) {
-  return postForm<UploadMedicalFileResult>(
+/** 上传医疗资料文件并返回 OCR 识别结果（支持多文件）。 */
+export function uploadMedicalFile(assessmentId: number, files: File[]) {
+  return postForm<UploadMedicalFileResult[]>(
     `${ BASE_URL }/files/${ assessmentId }/medical`,
-    createFileFormData(file),
+    createFilesFormData(files),
   );
 }
 
