@@ -116,7 +116,9 @@ export function postForm<T = unknown>(url: string, data: FormData, config?: Axio
     method: 'POST',
     data,
     headers: {
-      ...(config?.headers ?? {}),
+      ...(config?.headers ?? {
+        'Content-Type': 'multipart/form-data',
+      }),
     },
   });
 }
