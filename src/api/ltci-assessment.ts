@@ -297,12 +297,12 @@ function createFileFormData(file: File) {
 
 /** 构造文件上传请求体（多文件）。
  *
- * 后端通常会通过多个同名 `file` 字段接收多个文件。
+ * 后端通常会通过多个同名 `files` 字段接收多个文件。
  */
 function createFilesFormData(files: File[]) {
   const formData = new FormData();
   files.forEach((file) => {
-    formData.append('file', file);
+    formData.append('files', file);
   });
   return formData;
 }
