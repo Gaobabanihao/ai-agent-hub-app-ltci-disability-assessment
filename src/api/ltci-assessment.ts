@@ -200,14 +200,14 @@ export interface ParseSelfAssessmentResult {
   selfAssessment: ParsedSelfAssessment;
 }
 
-/** 上传医疗资料并返回 OCR 识别结果。 */
+/** 上传医疗资料并返回 OCR 识别结果（支持多文件）。 */
 export interface UploadMedicalFileResult {
-  /** 上传后的文件信息。 */
-  file: UploadedFile;
-  /** OCR 识别出的原始文本。 */
-  ocrText: string;
-  /** OCR 文本长度。 */
-  ocrLength: number;
+  /** 上传后的文件列表，后端返回 `files` 数组。 */
+  files: Array<{ file: UploadedFile }>;
+  /** OCR 识别出的原始文本（可选）。 */
+  ocrText?: string;
+  /** OCR 文本长度（可选）。 */
+  ocrLength?: number;
 }
 
 /** 评估明细主表信息。 */
@@ -364,7 +364,7 @@ export function uploadAndParseSelfAssessment(assessmentId: number, file: File) {
 
 /** 上传医疗资料文件并返回 OCR 识别结果（支持多文件）。 */
 export function uploadMedicalFile(assessmentId: number, files: File[]) {
-  return postForm<UploadMedicalFileResult[]>(
+  return postForm<UploadMedicalFileResult>(
     `${ BASE_URL }/files/${ assessmentId }/medical`,
     createFilesFormData(files),
   );

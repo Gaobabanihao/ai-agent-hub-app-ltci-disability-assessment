@@ -325,15 +325,19 @@ export function useAssessment() {
 
     if (type === 'medical') {
       const uploadedResults = await uploadMedicalFile(draftId, newFiles);
+      const resultItems =
+        Array.isArray(uploadedResults) ? uploadedResults : uploadedResults.files ?? [];
+
       uploadedFiles.push(
-        ...uploadedResults.map((uploaded, idx) =>
-          toFileInfo(newFiles[idx], {
-            id: uploaded.file.id,
-            fileName: uploaded.file.fileName,
-            fileSize: uploaded.file.fileSize,
-            uploadedAt: uploaded.file.uploadedAt,
-          }),
-        ),
+        ...resultItems.map((item, idx) => {
+          const uploadedFile = 'file' in item ? item.file : item;
+          return toFileInfo(newFiles[idx], {
+            id: uploadedFile.id,
+            fileName: uploadedFile.fileName,
+            fileSize: uploadedFile.fileSize,
+            uploadedAt: uploadedFile.uploadedAt,
+          });
+        }),
       );
     } else {
       for (const file of newFiles) {
