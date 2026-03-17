@@ -391,7 +391,7 @@ export function getAssessmentFiles(assessmentId: number) {
 /** 生成 AI 评估建议，结果会自动入库。 */
 export function generateAiSuggestion(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
   return postForm<AiSuggestionResult>(
-    `${ BASE_URL }/ai/suggestion/${ assessmentId }`,
+    `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
     createAiSuggestionFormData(selfAssessment, medical, audioVideo),
   );
 }

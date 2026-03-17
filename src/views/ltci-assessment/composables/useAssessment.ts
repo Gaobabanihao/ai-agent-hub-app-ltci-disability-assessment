@@ -362,7 +362,7 @@ export function useAssessment() {
           toFileInfo(file, {
             id: uploaded.id,
             fileName: uploaded.fileName,
-            fileSize: uploaded.file.fileSize,
+            fileSize: uploaded.fileSize,
             uploadedAt: uploaded.uploadedAt,
           }),
         );
