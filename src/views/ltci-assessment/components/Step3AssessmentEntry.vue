@@ -40,7 +40,7 @@ function onNoteInput(itemId: string, note: string) {
 
 <template>
   <div class="assessment-card">
-    <div class="card-header">
+    <div class="card-header-new">
       <el-icon class="card-header__icon"><EditPen /></el-icon>
       <h2>失能等级评估录入</h2>
     </div>
@@ -184,7 +184,24 @@ function onNoteInput(itemId: string, note: string) {
     margin: 0;
   }
 }
+.card-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+   background: #f0f9eb;
+  color: #67c23a;
 
+  &__icon {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+}
 .assessment-body {
   padding: 20px 24px;
   display: flex;

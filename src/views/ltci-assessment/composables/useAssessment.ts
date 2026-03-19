@@ -233,15 +233,14 @@ export function useAssessment() {
       ),
   );
 
-  const hasUploadedAllFiles = computed(
+  const hasUploadedRequiredFiles = computed(
     () =>
-      files.selfAssessment.length > 0 &&
-      files.medical.length > 0 &&
-      files.video.length > 0,
+      files.selfAssessment.length > 0 ||
+      files.medical.length > 0,
   );
 
   const canGenerateAiSuggestion = computed(
-    () => isInfoComplete.value && hasUploadedAllFiles.value,
+    () => isInfoComplete.value && hasUploadedRequiredFiles.value,
   );
 
   const hasAnyGrade = computed(() => assessmentItems.some((item) => item.grade !== null));
@@ -490,11 +489,8 @@ export function useAssessment() {
     const medicalFile = files.medical[0]?.file;
     const videoFile = files.video[0]?.file;
 
-    if (!selfAssessmentFile) {
-      throw new Error('请先上传客户自评表后再生成 AI 建议');
-    }
-    if (!medicalFile) {
-      throw new Error('请先上传医疗材料后再生成 AI 建议');
+    if (!selfAssessmentFile && !medicalFile) {
+      throw new Error('请至少上传自评表或医疗材料后再生成 AI 建议');
     }
 
     aiSuggestionLoading.value = true;
@@ -611,7 +607,6 @@ export function useAssessment() {
     aiSuggestion,
     aiSuggestionLoading,
     isInfoComplete,
-    hasUploadedAllFiles,
     canGenerateAiSuggestion,
     hasAnyGrade,
     setStep,

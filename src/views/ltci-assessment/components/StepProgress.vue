@@ -5,15 +5,31 @@ const props = defineProps<{
   currentStep: number;
 }>();
 
+const emit = defineEmits<{
+  (e: 'step-click', step: number): void;
+}>();
+
 const steps = [
-  { step: 1, label: '信息填写' },
-  { step: 2, label: '材料上传' },
-  { step: 3, label: '评估录入' },
-  { step: 4, label: '结果确认' },
+  { step: 1, label: '基本信息填写', id: 'step1' },
+  { step: 2, label: 'AI事前预评估分析', id: 'step2' },
+  { step: 3, label: '事中/后建议', id: 'step3' },
+  { step: 4, label: '量表录入', id: 'step4' },
 ];
 
 function progressWidth() {
   return `${(props.currentStep - 1) * (100 / (steps.length - 1))}%`;
+}
+
+function handleStepClick(step: number) {
+  emit('step-click', step);
+  // 跳转到对应锚点
+  const stepId = steps.find(s => s.step === step)?.id;
+  if (stepId) {
+    const element = document.getElementById(stepId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }
 </script>
 
@@ -24,13 +40,15 @@ function progressWidth() {
       <div class="step-track__line-fill" :style="{ width: progressWidth() }" />
 
       <div
-        v-for="{ step, label } in steps"
+        v-for="{ step, label, id } in steps"
         :key="step"
         class="step-item"
         :class="{
           'is-active': step === currentStep,
           'is-done': step < currentStep,
+          'is-clickable': step <= currentStep,
         }"
+        @click="handleStepClick(step)"
       >
         <div class="step-item__icon">
           <el-icon v-if="step < currentStep" size="14"><Check /></el-icon>
@@ -45,8 +63,15 @@ function progressWidth() {
 <style lang="scss" scoped>
 .step-progress {
   max-width: 1200px;
-  margin: 16px auto 0;
+  margin: 0 auto;
   padding: 0 24px;
+  position: sticky;
+  top: 60px;
+  z-index: 100;
+  background: #f5f8fa;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .step-track {
@@ -87,6 +112,12 @@ function progressWidth() {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 
   &__icon {
     width: 32px;
@@ -132,6 +163,15 @@ function progressWidth() {
       color: #1e6bb8;
       font-weight: 600;
     }
+  }
+
+  &.is-clickable {
+    cursor: pointer;
+  }
+
+  &:not(.is-clickable) {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 </style>

@@ -31,13 +31,6 @@ const uploadSections: UploadSection[] = [
     accept: '.pdf,.jpg,.jpeg,.png',
     desc: '支持 PDF、JPG、PNG',
   },
-  {
-    key: 'video',
-    title: '音视频材料',
-    icon: 'VideoPlay',
-    accept: '.mp4,.mp3',
-    desc: '支持 MP4、MP3 格式',
-  },
 ];
 
 const fileInputRefs = ref<Record<string, HTMLInputElement | null>>({});
@@ -89,17 +82,16 @@ async function handleDelete(key: FileUploadType, id: string) {
 function getFileIcon(fileName: string) {
   const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
   if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) return 'Picture';
-  if (['mp4', 'avi'].includes(ext)) return 'VideoPlay';
-  if (['mp3', 'wav'].includes(ext)) return 'Headset';
   if (['doc', 'docx'].includes(ext)) return 'Document';
+  if (['pdf'].includes(ext)) return 'Document';
   return 'Files';
 }
 </script>
 
 <template>
   <div class="upload-card">
-    <div class="card-header">
-      <h2>评估材料上传</h2>
+    <div class="card-header-new">
+      <h2>文件材料上传</h2>
     </div>
 
     <div class="upload-sections">
@@ -201,10 +193,28 @@ function getFileIcon(fileName: string) {
     margin: 0;
   }
 }
+.card-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+   background: #f0f9eb;
+  color: #67c23a;
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+}
 
 .upload-sections {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1px;
   background-color: #f0f7ff;
   padding: 20px;

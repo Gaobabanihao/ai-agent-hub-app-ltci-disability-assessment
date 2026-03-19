@@ -31,7 +31,7 @@ watch(isInfoComplete, (val) => {
 
 <template>
   <div class="info-card">
-    <div class="card-header">
+    <div class="card-header-new">
       <el-icon class="card-header__icon"><User /></el-icon>
       <h2>被保险人基本信息</h2>
     </div>
@@ -119,6 +119,24 @@ watch(isInfoComplete, (val) => {
   padding: 16px 24px;
   background: linear-gradient(135deg, #1e6bb8 0%, #2d7fc7 100%);
   color: #fff;
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+.card-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+   background: #f0f9eb;
+  color: #67c23a;
 
   &__icon {
     font-size: 20px;

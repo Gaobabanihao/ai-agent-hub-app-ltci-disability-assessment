@@ -144,20 +144,20 @@ function handleBack() {
 
 <template>
   <div class="result-card">
-    <div class="card-header">
+    <div class="card-header-new">
       <el-icon class="card-header__icon"><DocumentChecked /></el-icon>
       <h2>评估结果确认</h2>
 
       <div class="card-header__actions">
-        <el-button size="small" plain @click="handleRefresh">
+        <el-button color="#67c23a" size="small" plain @click="handleRefresh">
           <el-icon><Refresh /></el-icon>
           刷新汇总
         </el-button>
-        <el-button size="small" plain @click="handleExport">
+        <el-button  color="#67c23a" size="small" plain @click="handleExport">
           <el-icon><Download /></el-icon>
           导出PDF
         </el-button>
-        <el-button size="small" plain @click="handlePrint">
+        <el-button  color="#67c23a" size="small" plain @click="handlePrint">
           <el-icon><Printer /></el-icon>
           打印报告
         </el-button>
@@ -193,7 +193,7 @@ function handleBack() {
       <pre class="summary-body__content">{{ summaryText }}</pre>
     </div>
 
-    <div class="summary-body">
+    <!-- <div class="summary-body">
       <h3 class="summary-body__title">
         <el-icon><MagicStick /></el-icon>
         AI 智能评估建议
@@ -231,7 +231,7 @@ function handleBack() {
       <div v-else class="summary-body__empty">
         暂未生成 AI 建议
       </div>
-    </div>
+    </div> -->
 
     <!-- Action footer -->
     <div class="result-footer">
@@ -293,6 +293,40 @@ function handleBack() {
     }
   }
 }
+.card-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+   background: #f0f9eb;
+  color: #67c23a;
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+color: #67c23a;
+    .el-button {
+      --el-button-text-color: #fff;
+      --el-button-border-color: rgba(255, 255, 255, 0.5);
+      --el-button-bg-color: transparent;
+      --el-button-hover-text-color: #fff;
+      --el-button-hover-border-color: #fff;
+      --el-button-hover-bg-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
 
 // ── Grade banner ────────────────────────────────────────────────────────────
 
