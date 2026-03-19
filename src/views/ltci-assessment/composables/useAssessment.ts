@@ -233,6 +233,17 @@ export function useAssessment() {
       ),
   );
 
+  const hasUploadedAllFiles = computed(
+    () =>
+      files.selfAssessment.length > 0 &&
+      files.medical.length > 0 &&
+      files.video.length > 0,
+  );
+
+  const canGenerateAiSuggestion = computed(
+    () => isInfoComplete.value && hasUploadedAllFiles.value,
+  );
+
   const hasAnyGrade = computed(() => assessmentItems.some((item) => item.grade !== null));
 
   function setStep(step: number) {
@@ -329,15 +340,19 @@ export function useAssessment() {
         Array.isArray(uploadedResults) ? uploadedResults : uploadedResults.files ?? [];
 
       uploadedFiles.push(
-        ...resultItems.map((item, idx) => {
-          const uploadedFile = 'file' in item ? item.file : item;
-          return toFileInfo(newFiles[idx], {
-            id: uploadedFile.id,
-            fileName: uploadedFile.fileName,
-            fileSize: uploadedFile.fileSize,
-            uploadedAt: uploadedFile.uploadedAt,
-          });
-        }),
+        ...resultItems
+          .map((item, idx) => {
+            const file = newFiles[idx];
+            if (!file) return null;
+            const uploadedFile = 'file' in item ? item.file : item;
+            return toFileInfo(file, {
+              id: uploadedFile.id,
+              fileName: uploadedFile.fileName,
+              fileSize: uploadedFile.fileSize,
+              uploadedAt: uploadedFile.uploadedAt,
+            });
+          })
+          .filter((it): it is FileInfo => it !== null),
       );
     } else {
       for (const file of newFiles) {
@@ -411,6 +426,64 @@ export function useAssessment() {
     return submittedAssessment.value;
   }
 
+  function parseGradeFromText(text: string): string | null {
+    if (!text) return null;
+    const t = text.trim();
+    const numMatch = t.match(/^\d$/);
+    if (numMatch) return numMatch[0];
+
+    // 日常生活/感知觉
+    if (/依赖/.test(t)) return '0';
+    if (/部分独立/.test(t)) return '1';
+    if (/独立/.test(t)) return '2';
+
+    // 认知、情绪
+    if (/重度/.test(t)) return '0';
+    if (/中度/.test(t)) return '1';
+    if (/轻度/.test(t)) return '2';
+    if (/正常/.test(t)) return '3';
+
+    return null;
+  }
+
+  function applyAiSuggestionToItems(suggestion: string) {
+    let parsed: any;
+    try {
+      parsed = JSON.parse(suggestion);
+    } catch {
+      return;
+    }
+
+    const summary = parsed['智能评估结果摘要'] || parsed['智能评估结果摘要'];
+    const radar = Array.isArray(summary?.['ADL雷达']) ? summary['ADL雷达'] : [];
+
+    const name2id = ASSESSMENT_CATEGORIES.flatMap((c) => c.items).reduce<Record<string, string>>((acc, item) => {
+      acc[item.name] = item.id;
+      return acc;
+    }, {});
+
+    radar.forEach((entry: any) => {
+      const itemName: string = entry['项目'] || entry['name'];
+      const gradeText: string = entry['评估'] || entry['evaluation'] || '';
+      const reason: string = entry['依据'] || entry['reason'] || '';
+      const itemId = name2id[itemName];
+      if (!itemId) return;
+
+      const grade = parseGradeFromText(gradeText);
+      if (!grade) return;
+
+      const item = assessmentItems.find((i) => i.itemId === itemId);
+      if (!item) return;
+
+      if (item.grade === null || item.grade === '') {
+        item.grade = grade;
+      }
+      if (!item.note && reason) {
+        item.note = `AI 依据：${reason}`;
+      }
+    });
+  }
+
   async function generateCurrentAiSuggestion() {
     const draftId = await ensureAssessmentDraft();
     const selfAssessmentFile = files.selfAssessment[0]?.file;
@@ -427,6 +500,9 @@ export function useAssessment() {
     aiSuggestionLoading.value = true;
     try {
       aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
+      if (aiSuggestion.value?.suggestion) {
+        applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+      }
       return aiSuggestion.value;
     } finally {
       aiSuggestionLoading.value = false;
@@ -535,6 +611,8 @@ export function useAssessment() {
     aiSuggestion,
     aiSuggestionLoading,
     isInfoComplete,
+    hasUploadedAllFiles,
+    canGenerateAiSuggestion,
     hasAnyGrade,
     setStep,
     advanceStep,

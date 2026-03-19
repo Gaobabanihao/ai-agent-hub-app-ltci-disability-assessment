@@ -7,12 +7,12 @@ defineOptions({ name: 'Step1InfoEntry' });
 
 const { basicInfo, isInfoComplete, advanceStep } = useAssessment();
 
-basicInfo.insureeName = '';
-basicInfo.idCard = '';
-basicInfo.phone = '';
-basicInfo.insuranceArea = '';
-basicInfo.assessmentDate = '';
-basicInfo.assessor = '';
+basicInfo.insureeName = '张三';
+basicInfo.idCard = '642221199902153950';
+basicInfo.phone = '17520907876';
+basicInfo.insuranceArea = '上海';
+basicInfo.assessmentDate = '2024-06-01';
+basicInfo.assessor = '李护士';
 
 const rules: FormRules = {
   insureeName: [{ required: true, message: '请填写被保险人姓名', trigger: 'blur' }],

@@ -12,23 +12,37 @@ import Step4ResultConfirm from './components/Step4ResultConfirm.vue';
 defineOptions({ name: 'LtciAssessmentPage' });
 
 const router = useRouter();
-const { currentStep, validateBasicInfo, ensureAssessmentDraft, advanceStep } = useAssessment();
+const {
+  currentStep,
+  validateBasicInfo,
+  ensureAssessmentDraft,
+  advanceStep,
+  canGenerateAiSuggestion,
+  generateCurrentAiSuggestion,
+} = useAssessment();
 const draftLoading = ref(false);
 
-async function handleNextToStep3() {
+async function handleGenerateAiSuggestion() {
   const { valid, errors } = validateBasicInfo();
   if (!valid) {
     const firstError = Object.values(errors)[0];
     ElMessage.warning(firstError);
     return;
   }
+
+  if (!canGenerateAiSuggestion.value) {
+    ElMessage.warning('请先上传客户自评表、医疗材料和音视频材料后再生成 AI 建议');
+    return;
+  }
+
   draftLoading.value = true;
   try {
-    // 提前创建草稿，保证后续上传/提交都能拿到 assessmentId。
+    // 先创建草稿（如果尚未创建），再生成 AI 建议并自动写入评估项
     await ensureAssessmentDraft();
+    await generateCurrentAiSuggestion();
     advanceStep(3);
   } catch (error) {
-    const message = error instanceof Error ? error.message : '创建评估草稿失败';
+    const message = error instanceof Error ? error.message : '生成 AI 建议失败';
     ElMessage.error(message);
   } finally {
     draftLoading.value = false;
@@ -72,22 +86,29 @@ function handleConfirmed() {
         v-if="currentStep < 3"
         class="step-nav-hint"
       >
-        <el-button type="primary" :loading="draftLoading" @click="handleNextToStep3">
+        <el-button
+          type="primary"
+          :loading="draftLoading"
+          :disabled="!canGenerateAiSuggestion"
+          @click="handleGenerateAiSuggestion"
+        >
           <el-icon><ArrowRight /></el-icon>
-          进入评估录入
+          生成 AI 建议
         </el-button>
-        <span class="step-nav-hint__tip">请先完成信息填写后继续</span>
+        <span class="step-nav-hint__tip">
+          {{ canGenerateAiSuggestion ? '生成 AI 建议后可进入评估录入' : '请先完成信息填写并上传自评表、医疗材料、音视频后再生成 AI 建议' }}
+        </span>
       </div>
 
       <!-- Step 3: Assessment entry (shown from step 3 onward) -->
       <transition name="slide-up">
-        <Step3AssessmentEntry v-if="currentStep >= 3" />
+        <Step3AssessmentEntry v-if="currentStep >= 3 && canGenerateAiSuggestion" />
       </transition>
 
       <!-- Step 4: Result confirmation (shown from step 4 onward) -->
       <transition name="slide-up">
         <Step4ResultConfirm
-          v-if="currentStep >= 3"
+          v-if="currentStep >= 3 && canGenerateAiSuggestion"
           @confirmed="handleConfirmed"
         />
       </transition>
