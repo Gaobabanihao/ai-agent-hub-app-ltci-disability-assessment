@@ -41,16 +41,14 @@ function onNoteInput(itemId: string, note: string) {
 <template>
   <div class="assessment-card">
     <div class="card-header-new">
-      <el-icon class="card-header__icon"><EditPen /></el-icon>
+      <el-icon class="card-header__icon">
+        <EditPen />
+      </el-icon>
       <h2>失能等级评估录入</h2>
     </div>
 
     <div class="assessment-body">
-      <div
-        v-for="category in ASSESSMENT_CATEGORIES"
-        :key="category.id"
-        class="category-block"
-      >
+      <div v-for="category in ASSESSMENT_CATEGORIES" :key="category.id" class="category-block">
         <!-- 类别标题 -->
         <div class="category-header">
           <span class="category-header__number">{{ category.number }}</span>
@@ -59,11 +57,7 @@ function onNoteInput(itemId: string, note: string) {
         </div>
 
         <!-- 评估项目 -->
-        <div
-          v-for="itemDef in category.items"
-          :key="itemDef.id"
-          class="assessment-item"
-        >
+        <div v-for="itemDef in category.items" :key="itemDef.id" class="assessment-item">
           <div class="assessment-item__title">
             <span class="assessment-item__number">{{ itemDef.number }}</span>
             <h4>{{ itemDef.name }}</h4>
@@ -71,12 +65,11 @@ function onNoteInput(itemId: string, note: string) {
 
           <div class="assessment-item__body">
             <!-- 客户自评结论（上传自评表后显示） -->
-            <div
-              v-if="selfAssessmentData[itemDef.selfItem] !== undefined"
-              class="self-assessment-box"
-            >
+            <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined" class="self-assessment-box">
               <div class="self-assessment-box__label">
-                <el-icon><User /></el-icon>
+                <el-icon>
+                  <User />
+                </el-icon>
                 客户自评结论
               </div>
               <div class="self-assessment-box__content">
@@ -87,19 +80,10 @@ function onNoteInput(itemId: string, note: string) {
             <!-- 评估等级选择 -->
             <div class="grade-row">
               <label class="grade-row__label">评估等级</label>
-              <el-select
-                :model-value="getItem(itemDef.id).grade"
-                placeholder="请选择评估等级"
-                clearable
-                style="width: 260px"
-                @update:model-value="(val) => onGradeChange(itemDef.id, val)"
-              >
-                <el-option
-                  v-for="opt in category.gradeOptions"
-                  :key="opt.value"
-                  :label="opt.label"
-                  :value="opt.value"
-                />
+              <el-select :model-value="getItem(itemDef.id).grade" placeholder="请选择评估等级" clearable style="width: 260px"
+                @update:model-value="(val) => onGradeChange(itemDef.id, val)">
+                <el-option v-for="opt in category.gradeOptions" :key="opt.value" :label="opt.label"
+                  :value="opt.value" />
               </el-select>
             </div>
 
@@ -107,10 +91,17 @@ function onNoteInput(itemId: string, note: string) {
             <transition name="fade">
               <div v-if="aiSuggestions[itemDef.id]" class="ai-suggestion-panel">
                 <div class="ai-suggestion-panel__title">
-                  <el-icon><MagicStick /></el-icon>
+                  <el-icon>
+                    <MagicStick />
+                  </el-icon>
                   材料参考建议
                 </div>
-
+                <div v-if="aiSuggestions[itemDef.id]?.selfAssessment" class="ai-suggestion-panel__section">
+                  <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--self">
+                    自评对比
+                  </span>
+                  <p>{{ aiSuggestions[itemDef.id]?.selfAssessment }}</p>
+                </div>
                 <!-- 医疗材料建议 -->
                 <div class="ai-suggestion-panel__section">
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--medical">
@@ -128,28 +119,15 @@ function onNoteInput(itemId: string, note: string) {
                 </div>
 
                 <!-- 自评对比（仅在有自评数据时显示） -->
-                <div
-                  v-if="aiSuggestions[itemDef.id]?.selfAssessment"
-                  class="ai-suggestion-panel__section"
-                >
-                  <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--self">
-                    自评对比
-                  </span>
-                  <p>{{ aiSuggestions[itemDef.id]?.selfAssessment }}</p>
-                </div>
+
               </div>
             </transition>
 
             <!-- 评估意见 -->
             <div class="note-area">
               <label class="note-area__label">评估意见</label>
-              <el-input
-                type="textarea"
-                :rows="2"
-                :model-value="getItem(itemDef.id).note"
-                placeholder="请录入本项评估意见..."
-                @update:model-value="(val) => onNoteInput(itemDef.id, val)"
-              />
+              <el-input type="textarea" :rows="2" :model-value="getItem(itemDef.id).note" placeholder="请录入本项评估意见..."
+                @update:model-value="(val) => onNoteInput(itemDef.id, val)" />
             </div>
           </div>
         </div>
@@ -184,12 +162,13 @@ function onNoteInput(itemId: string, note: string) {
     margin: 0;
   }
 }
+
 .card-header-new {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 16px 24px;
-   background: #f0f9eb;
+  background: #f0f9eb;
   color: #67c23a;
 
   &__icon {
@@ -202,6 +181,7 @@ function onNoteInput(itemId: string, note: string) {
     margin: 0;
   }
 }
+
 .assessment-body {
   padding: 20px 24px;
   display: flex;

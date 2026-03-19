@@ -56,6 +56,41 @@ const formattedAiSuggestion = computed(() => {
   }
 });
 
+const aiContent = computed(() => {
+  const content = aiSuggestion.value?.content;
+  return content ? content : null;
+});
+
+const smartAssessSummary = computed(() => {
+  const summary = aiContent.value?.smartAssessSummary;
+  if (!summary) return null;
+  try {
+    return JSON.parse(summary);
+  } catch {
+    return summary;
+  }
+});
+
+const preAssessTip = computed(() => {
+  const tip = aiContent.value?.preAssessTip;
+  if (!tip) return null;
+  try {
+    return JSON.parse(tip);
+  } catch {
+    return tip;
+  }
+});
+
+const keySuggest = computed(() => {
+  const suggest = aiContent.value?.keySuggest;
+  if (!suggest) return null;
+  try {
+    return JSON.parse(suggest);
+  } catch {
+    return suggest;
+  }
+});
+
 const levelTagType = computed(() => {
   const level = displayResult.value.disabilityLevel;
   if (level.includes('重度')) {
@@ -185,16 +220,17 @@ function handleBack() {
     </div>
 
     <!-- Summary text content -->
-    <div class="summary-body">
+    <!-- <div class="summary-body">
       <h3 class="summary-body__title">
         <el-icon><Memo /></el-icon>
         评估结论汇总
       </h3>
       <pre class="summary-body__content">{{ summaryText }}</pre>
-    </div>
+    </div> -->
 
-    <!-- <div class="summary-body">
-      <h3 class="summary-body__title">
+    <!-- AI 智能评估建议 -->
+    <div class="summary-body">
+      <!-- <h3 class="summary-body__title">
         <el-icon><MagicStick /></el-icon>
         AI 智能评估建议
       </h3>
@@ -219,19 +255,130 @@ function handleBack() {
         <span v-if="!canGenerateAi" class="summary-body__hint">
           需先上传客户自评表和医疗材料后才能生成 AI 建议
         </span>
-      </div>
+      </div> -->
+      
       <div v-if="aiSuggestion" class="ai-result">
         <div class="ai-result__meta">
           <span>生成时间：{{ new Date(aiSuggestion.createTime).toLocaleString('zh-CN') }}</span>
           <span>Token：{{ aiSuggestion.totalTokens }}</span>
           <span v-if="aiSuggestion.finishReason">结束原因：{{ aiSuggestion.finishReason }}</span>
         </div>
-        <pre class="summary-body__content ai-result__content">{{ formattedAiSuggestion }}</pre>
+        
+        <!-- 智能评估结果摘要 -->
+        <div class="ai-section">
+          <h4 class="ai-section__title">
+            <el-icon><Document /></el-icon>
+            智能评估结果摘要
+          </h4>
+          <div v-if="smartAssessSummary" class="ai-section__content">
+            <div v-if="smartAssessSummary['智能评估失能等级建议']" class="ai-item">
+              <div class="ai-item__label">失能等级建议：</div>
+              <div class="ai-item__value">{{ smartAssessSummary['智能评估失能等级建议'].区间 }}</div>
+              <div class="ai-item__desc">{{ smartAssessSummary['智能评估失能等级建议'].依据 }}</div>
+            </div>
+            <div v-if="smartAssessSummary['置信度提示']" class="ai-item">
+              <div class="ai-item__label">置信度：</div>
+              <div class="ai-item__value">{{ smartAssessSummary['置信度提示'].置信度 }}</div>
+              <div class="ai-item__desc">{{ smartAssessSummary['置信度提示'].置信度依据 }}</div>
+            </div>
+            <div v-if="smartAssessSummary['ADL雷达']" class="ai-item">
+              <div class="ai-item__label">ADL评估：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in smartAssessSummary['ADL雷达']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item.项目 }}：</span>
+                  <span class="ai-item__list-value">{{ item.评估 }}</span>
+                  <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="ai-section__empty">
+            暂无智能评估结果摘要
+          </div>
+        </div>
+        
+        <!-- 系统预评估提示 -->
+        <div class="ai-section">
+          <h4 class="ai-section__title">
+            <el-icon><Warning /></el-icon>
+            系统预评估提示
+          </h4>
+          <div v-if="preAssessTip" class="ai-section__content">
+            <div v-if="preAssessTip['重点评估关注事项']" class="ai-item">
+              <div class="ai-item__label">重点评估关注事项：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in preAssessTip['重点评估关注事项']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item.事项 }}</span>
+                  <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="preAssessTip['高风险标记'] && preAssessTip['高风险标记'].length > 0" class="ai-item">
+              <div class="ai-item__label">高风险标记：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in preAssessTip['高风险标记']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="preAssessTip['主要致失能推断原因'] && preAssessTip['主要致失能推断原因'].length > 0" class="ai-item">
+              <div class="ai-item__label">主要致失能推断原因：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in preAssessTip['主要致失能推断原因']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="ai-section__empty">
+            暂无系统预评估提示
+          </div>
+        </div>
+        
+        <!-- 重点建议 -->
+        <div class="ai-section">
+          <h4 class="ai-section__title">
+            <el-icon><Lightning /></el-icon>
+            重点建议
+          </h4>
+          <div v-if="keySuggest" class="ai-section__content">
+            <div v-if="keySuggest['建议重点核实的能力项']" class="ai-item">
+              <div class="ai-item__label">建议重点核实的能力项：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in keySuggest['建议重点核实的能力项']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item.能力项 }}</span>
+                  <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="keySuggest['个性化重点提问清单']" class="ai-item">
+              <div class="ai-item__label">个性化重点提问清单：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in keySuggest['个性化重点提问清单']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item.问题 }}</span>
+                  <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="keySuggest['建议现场/视频重点观察动作']" class="ai-item">
+              <div class="ai-item__label">建议现场/视频重点观察动作：</div>
+              <div class="ai-item__list">
+                <div v-for="(item, index) in keySuggest['建议现场/视频重点观察动作']" :key="index" class="ai-item__list-item">
+                  <span class="ai-item__list-label">{{ item.观察动作 }}</span>
+                  <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="ai-section__empty">
+            暂无重点建议
+          </div>
+        </div>
       </div>
       <div v-else class="summary-body__empty">
         暂未生成 AI 建议
       </div>
-    </div> -->
+    </div>
 
     <!-- Action footer -->
     <div class="result-footer">
@@ -426,7 +573,7 @@ color: #67c23a;
 .ai-result {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 
   &__meta {
     display: flex;
@@ -434,10 +581,107 @@ color: #67c23a;
     flex-wrap: wrap;
     font-size: 12px;
     color: #666;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid #e8f4fc;
+    border-radius: 6px;
+  }
+}
+
+// ── AI Section ──────────────────────────────────────────────────────────────
+
+.ai-section {
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e6bb8;
+    padding: 12px 16px;
+    background: #e8f4fc;
+    margin: 0;
   }
 
   &__content {
-    min-height: 240px;
+    padding: 16px;
+  }
+
+  &__empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+  }
+}
+
+// ── AI Item ─────────────────────────────────────────────────────────────────
+
+.ai-item {
+  margin-bottom: 16px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e8f4fc;
+    border-radius: 6px;
+  }
+
+  &__list-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+  }
+
+  &__list-value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+  }
+
+  &__list-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
   }
 }
 
