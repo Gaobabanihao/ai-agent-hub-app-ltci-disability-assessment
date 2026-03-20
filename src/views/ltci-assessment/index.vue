@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useAssessment } from './composables/useAssessment';
+import { useScoring } from './composables/useScoring';
+import { useLtciAssessmentStore } from '@/store/modules/ltci-assessment';
 import StepProgress from './components/StepProgress.vue';
 import Step1InfoEntry from './components/Step1InfoEntry.vue';
 import Step2FileUpload from './components/Step2FileUpload.vue';
@@ -13,22 +15,40 @@ import Step4ResultConfirm from './components/Step4ResultConfirm.vue';
 defineOptions({ name: 'LtciAssessmentPage' });
 
 const router = useRouter();
-const {
-  currentStep,
-  validateBasicInfo,
-  ensureAssessmentDraft,
-  advanceStep,
-  files,
+const {  
+  currentStep,  
+  validateBasicInfo,  
+  ensureAssessmentDraft,  
+  advanceStep,  
+  files,  
   generateCurrentAiSuggestion,
+  assessmentItems,
+  setStep,
+  submitCurrentAssessment,
+  buildSavePayload,
 } = useAssessment();
 const draftLoading = ref(false);
+const submitLoading = ref(false);
+
+// 计算结果
+const { calculateResult } = useScoring(
+  assessmentItems,
+  files,
+  null
+);
+const result = computed(() => calculateResult());
 
 // 检查是否上传了自评表或医疗材料
 const hasUploadedRequiredFiles = computed(() => {
   return files.selfAssessment.length > 0 || files.medical.length > 0;
 });
 
-async function handleGenerateAiSuggestion() {
+// 检查是否上传了音视频文件
+const hasUploadedVideoFiles = computed(() => {
+  return files.video.length > 0;
+});
+
+async function handleGenerateAiSuggestionStep2() {
   const { valid, errors } = validateBasicInfo();
   if (!valid) {
     const firstError = Object.values(errors)[0];
@@ -55,8 +75,63 @@ async function handleGenerateAiSuggestion() {
   }
 }
 
-function handleConfirmed() {
-  advanceStep(4);
+async function handleGenerateAiSuggestionStep3() {
+  const { valid, errors } = validateBasicInfo();
+  if (!valid) {
+    const firstError = Object.values(errors)[0];
+    ElMessage.warning(firstError);
+    return;
+  }
+
+  if (!hasUploadedVideoFiles.value) {
+    ElMessage.warning('请上传音视频文件后再生成 AI 建议');
+    return;
+  }
+
+  draftLoading.value = true;
+  try {
+    // 先创建草稿（如果尚未创建），再生成 AI 建议并自动写入评估项
+    await ensureAssessmentDraft();
+    await generateCurrentAiSuggestion();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '生成 AI 建议失败';
+    ElMessage.error(message);
+  } finally {
+    draftLoading.value = false;
+  }
+}
+
+async function handleConfirm() {
+  try {
+    await ElMessageBox.confirm(
+      '确认提交本次评估结果？提交后将生成正式评估报告。',
+      '确认提交',
+      {
+        confirmButtonText: '确认提交',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+  } catch {
+    return;
+  }
+  submitLoading.value = true;
+  try {
+    const submitted = await submitCurrentAssessment();
+    try {
+      // 历史记录暂无正式列表接口，这里仅做兼容保存，不影响正式提交流程。
+      await useLtciAssessmentStore().save(buildSavePayload());
+    } catch {
+      // 历史记录接口是兼容能力，不影响正式提交结果。
+    }
+    setStep(4);
+    ElMessage.success(`评估结果已成功提交：${submitted.finalGrade}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '提交失败，请稍后重试';
+    ElMessage.error(message);
+  } finally {
+    submitLoading.value = false;
+  }
 }
 
 function handleStepClick(step: number) {
@@ -119,7 +194,7 @@ function handleStepClick(step: number) {
             <el-button
               type="primary"
               :loading="draftLoading"
-              @click="handleGenerateAiSuggestion"
+              @click="handleGenerateAiSuggestionStep2"
             >
               <el-icon><ArrowRight /></el-icon>
               生成 AI 建议
@@ -153,10 +228,19 @@ function handleStepClick(step: number) {
             <Step3VideoUpload />
           </div>
           
-          <!-- 当前失能等级评估录入 -->
-          <div class="assessment-entry-section">
-            <h3>当前失能等级评估录入</h3>
-            <p class="assessment-entry-section__desc">根据上传的材料和AI建议，进行最终的失能等级评估。</p>
+          <!-- 生成AI建议按钮 -->
+          <div class="step-nav-hint">
+            <el-button
+              type="primary"
+              :loading="draftLoading"
+              @click="handleGenerateAiSuggestionStep3"
+            >
+              <el-icon><ArrowRight /></el-icon>
+              生成 AI 建议
+            </el-button>
+            <span class="step-nav-hint__tip">
+              {{ hasUploadedVideoFiles ? '生成 AI 建议' : '请上传音视频文件后再生成 AI 建议' }}
+            </span>
           </div>
         </div>
       </div>
@@ -170,8 +254,25 @@ function handleStepClick(step: number) {
         <div class="step-content">
           <!-- 评估录入 -->
           <transition name="slide-up">
-            <Step3AssessmentEntry v-if="currentStep >= 3" />
+            <Step3AssessmentEntry />
           </transition>
+          
+          <!-- 结果确认底部按钮 -->
+          <div class="result-footer">
+            <el-button @click="() => setStep(3)">
+              <el-icon><ArrowLeft /></el-icon>
+              返回修改
+            </el-button>
+            <el-button
+              type="primary"
+              :disabled="result.gradedCount < assessmentItems.length"
+              :loading="submitLoading"
+              @click="handleConfirm"
+            >
+              <el-icon><CircleCheck /></el-icon>
+              确认提交结果
+            </el-button>
+          </div>
         </div>
       </div>
     </div>
@@ -377,5 +478,19 @@ function handleStepClick(step: number) {
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(16px);
+}
+
+// ── Result footer ────────────────────────────────────────────────────────────
+
+.result-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f7ff;
+  background: #fafcff;
+  margin-top: 24px;
+  border-radius: 8px;
 }
 </style>

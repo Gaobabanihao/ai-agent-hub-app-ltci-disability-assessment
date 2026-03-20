@@ -8,7 +8,7 @@ defineOptions({ name: 'Step3VideoUpload' });
 
 const { files, addFiles, removeFile } = useAssessment();
 
-const fileInputRefs = ref<Record<string, HTMLInputElement | null>>({});
+const fileInputRef = ref<HTMLInputElement | null>(null);
 // 按分组维护 loading，避免一个文件组上传时阻塞其它组操作。
 const uploadLoading = reactive<Record<FileUploadType, boolean>>({
   selfAssessment: false,
@@ -22,7 +22,7 @@ const deleteLoading = reactive<Record<FileUploadType, boolean>>({
 });
 
 function triggerUpload() {
-  fileInputRefs.value['video']?.click();
+  fileInputRef.value?.click();
 }
 
 async function handleFileChange(event: Event) {
@@ -81,7 +81,7 @@ function getFileIcon(fileName: string) {
           上传文件
         </el-button>
         <input
-          ref="(el) => (fileInputRefs['video'] = el as HTMLInputElement)"
+          ref="fileInputRef"
           type="file"
           accept=".mp4,.mp3,.avi,.mov,.wav,.ogg"
           multiple

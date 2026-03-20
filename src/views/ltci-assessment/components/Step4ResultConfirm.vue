@@ -380,22 +380,7 @@ function handleBack() {
       </div>
     </div>
 
-    <!-- Action footer -->
-    <div class="result-footer">
-      <el-button @click="handleBack">
-        <el-icon><ArrowLeft /></el-icon>
-        返回修改
-      </el-button>
-      <el-button
-        type="primary"
-        :disabled="result.gradedCount < assessmentItems.length"
-        :loading="submitLoading"
-        @click="handleConfirm"
-      >
-        <el-icon><CircleCheck /></el-icon>
-        确认提交结果
-      </el-button>
-    </div>
+
   </div>
 </template>
 
@@ -595,6 +580,11 @@ color: #67c23a;
   border: 1px solid #e8f4fc;
   border-radius: 8px;
   overflow: hidden;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &__title {
     display: flex;
@@ -610,6 +600,8 @@ color: #67c23a;
 
   &__content {
     padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
   }
 
   &__empty {
