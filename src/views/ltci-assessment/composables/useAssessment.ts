@@ -499,6 +499,8 @@ export function useAssessment() {
       aiSuggestionLoading.value = true;
       try {
         aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, undefined);
+        console.log('aiSuggestion.value',aiSuggestion.value);
+        
         if (aiSuggestion.value?.suggestion) {
           applyAiSuggestionToItems(aiSuggestion.value.suggestion);
         }

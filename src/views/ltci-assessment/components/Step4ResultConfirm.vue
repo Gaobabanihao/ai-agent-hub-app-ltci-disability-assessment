@@ -91,6 +91,10 @@ const keySuggest = computed(() => {
   }
 });
 
+const selfAssessmentOcrResult = computed(() => {
+  return aiSuggestion.value?.selfAssessmentOcrResult;
+});
+
 const levelTagType = computed(() => {
   const level = displayResult.value.disabilityLevel;
   if (level.includes('重度')) {
@@ -258,10 +262,25 @@ function handleBack() {
       </div> -->
       
       <div v-if="aiSuggestion" class="ai-result">
-        <div class="ai-result__meta">
+        <!-- <div class="ai-result__meta">
           <span>生成时间：{{ new Date(aiSuggestion.createTime).toLocaleString('zh-CN') }}</span>
           <span>Token：{{ aiSuggestion.totalTokens }}</span>
           <span v-if="aiSuggestion.finishReason">结束原因：{{ aiSuggestion.finishReason }}</span>
+        </div> -->
+        
+        <!-- 自评表结果 -->
+        <div class="ai-section">
+          <h4 class="ai-section__title">
+            <el-icon><Document /></el-icon>
+            自评表结果
+          </h4>
+          <div v-if="selfAssessmentOcrResult" class="ai-section__content">
+            {{ selfAssessmentOcrResult.value }}
+            <div v-html="selfAssessmentOcrResult" class="self-assessment-content"></div>
+          </div>
+          <div v-else class="ai-section__empty">
+            暂无自评表结果
+          </div>
         </div>
         
         <!-- 智能评估结果摘要 -->
@@ -670,10 +689,55 @@ color: #67c23a;
     font-weight: 500;
   }
 
-  &__list-desc {
+  .ai-item__list-desc {
     font-size: 12px;
     color: #666;
     line-height: 1.4;
+  }
+}
+
+.self-assessment-content {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.6;
+  
+  /* 确保HTML内容中的元素能够正确渲染 */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e6bb8;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    margin-bottom: 8px;
+  }
+  
+  ul, ol {
+    margin-left: 20px;
+    margin-bottom: 8px;
+  }
+  
+  li {
+    margin-bottom: 4px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+  }
+  
+  th, td {
+    border: 1px solid #e8f4fc;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f8fafc;
+    font-weight: 600;
   }
 }
 
