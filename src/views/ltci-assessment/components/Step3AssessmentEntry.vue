@@ -65,7 +65,7 @@ function onNoteInput(itemId: string, note: string) {
 
           <div class="assessment-item__body">
             <!-- 客户自评结论（上传自评表后显示） -->
-            <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined" class="self-assessment-box">
+            <!-- <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined" class="self-assessment-box">
               <div class="self-assessment-box__label">
                 <el-icon>
                   <User />
@@ -75,21 +75,9 @@ function onNoteInput(itemId: string, note: string) {
               <div class="self-assessment-box__content">
                 {{ getSelfAssessmentText(itemDef.selfItem) }}
               </div>
-            </div>
-
-            <!-- 评估等级选择 -->
-            <div class="grade-row">
-              <label class="grade-row__label">评估等级</label>
-              <el-select :model-value="getItem(itemDef.id).grade" placeholder="请选择评估等级" clearable style="width: 260px"
-                @update:model-value="(val) => onGradeChange(itemDef.id, val)">
-                <el-option v-for="opt in category.gradeOptions" :key="opt.value" :label="opt.label"
-                  :value="opt.value" />
-              </el-select>
-            </div>
-
-            <!-- 材料参考建议（三段式，本地辅助提示） -->
+            </div> -->
             <transition name="fade">
-              <div v-if="aiSuggestions[itemDef.id]" class="ai-suggestion-panel">
+              <div class="ai-suggestion-panel">
                 <div class="ai-suggestion-panel__title">
                   <el-icon>
                     <MagicStick />
@@ -98,7 +86,7 @@ function onNoteInput(itemId: string, note: string) {
                 </div>
                 <div v-if="aiSuggestions[itemDef.id]?.selfAssessment" class="ai-suggestion-panel__section">
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--self">
-                    自评对比
+                    自评
                   </span>
                   <p>{{ aiSuggestions[itemDef.id]?.selfAssessment }}</p>
                 </div>
@@ -122,6 +110,18 @@ function onNoteInput(itemId: string, note: string) {
 
               </div>
             </transition>
+            <!-- 评估等级选择 -->
+            <div class="grade-row">
+              <label class="grade-row__label">评估等级</label>
+              <el-select :model-value="getItem(itemDef.id).grade" placeholder="请选择评估等级" clearable style="width: 260px"
+                @update:model-value="(val) => onGradeChange(itemDef.id, val)">
+                <el-option v-for="opt in category.gradeOptions" :key="opt.value" :label="opt.label"
+                  :value="opt.value" />
+              </el-select>
+            </div>
+
+            <!-- 材料参考建议（三段式，本地辅助提示） -->
+
 
             <!-- 评估意见 -->
             <div class="note-area">

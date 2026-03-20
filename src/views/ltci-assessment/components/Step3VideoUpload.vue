@@ -83,7 +83,7 @@ function getFileIcon(fileName: string) {
         <input
           ref="fileInputRef"
           type="file"
-          accept=".mp4,.mp3,.avi,.mov,.wav,.ogg"
+          accept=".mp4,.mp3,.avi,.mov,.wav,.ogg,.m4a"
           multiple
           class="hidden-input"
           @change="handleFileChange"

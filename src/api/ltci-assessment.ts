@@ -388,7 +388,7 @@ export function getAssessmentFiles(assessmentId: number) {
   return get<UploadedFile[]>(`${ BASE_URL }/files/${ assessmentId }`);
 }
 
-/** 生成 AI 评估建议，结果会自动入库。 */
+/** 生成 AI 评估建议，结果会自动入库。  */
 export function generateAiSuggestion(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
   return postForm<AiSuggestionResult>(
     `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
@@ -396,9 +396,15 @@ export function generateAiSuggestion(assessmentId: number, selfAssessment: File,
   );
 }
 
-/** 查询已生成的 AI 评估建议。 */
+
+/** 查询已生成的 AI 评估建议。提示词一 */
 export function getAiSuggestion(assessmentId: number) {
   return get<AiSuggestionResult>(`${ BASE_URL }/ai/suggestion/${ assessmentId }`);
+}
+
+/** 查询已生成的 AI 评估建议。提示词二 */
+export function getAiSuggestion2(assessmentId: number) {
+  return get<AiSuggestionResult>(`${ BASE_URL }/ai/inProcess/${ assessmentId }`);
 }
 
 // ===== 历史记录接口（当前无正式文档，保留兼容） =====

@@ -483,25 +483,60 @@ export function useAssessment() {
     });
   }
 
-  async function generateCurrentAiSuggestion() {
+  async function generateCurrentAiSuggestion(step?: number) {
     const draftId = await ensureAssessmentDraft();
     const selfAssessmentFile = files.selfAssessment[0]?.file;
     const medicalFile = files.medical[0]?.file;
     const videoFile = files.video[0]?.file;
 
-    if (!selfAssessmentFile && !medicalFile) {
-      throw new Error('请至少上传自评表或医疗材料后再生成 AI 建议');
-    }
-
-    aiSuggestionLoading.value = true;
-    try {
-      aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
-      if (aiSuggestion.value?.suggestion) {
-        applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+    // 根据步骤决定传递哪些文件
+    if (step === 2) {
+      // 第二步：仅需要自评表或医疗材料
+      if (!selfAssessmentFile && !medicalFile) {
+        throw new Error('请至少上传自评表或医疗材料后再生成 AI 建议');
       }
-      return aiSuggestion.value;
-    } finally {
-      aiSuggestionLoading.value = false;
+      // 传递自评表和医疗材料，不传递音视频
+      aiSuggestionLoading.value = true;
+      try {
+        aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, undefined);
+        if (aiSuggestion.value?.suggestion) {
+          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+        }
+        return aiSuggestion.value;
+      } finally {
+        aiSuggestionLoading.value = false;
+      }
+    } else if (step === 3) {
+      // 第三步：仅需要音视频文件
+      if (!videoFile) {
+        throw new Error('请上传音视频文件后再生成 AI 建议');
+      }
+      // 传递音视频文件，不传递自评表和医疗材料
+      aiSuggestionLoading.value = true;
+      try {
+        aiSuggestion.value = await generateAiSuggestion(draftId, undefined, undefined, videoFile);
+        if (aiSuggestion.value?.suggestion) {
+          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+        }
+        return aiSuggestion.value;
+      } finally {
+        aiSuggestionLoading.value = false;
+      }
+    } else {
+      // 默认行为：传递所有文件
+      if (!selfAssessmentFile && !medicalFile && !videoFile) {
+        throw new Error('请至少上传一种材料后再生成 AI 建议');
+      }
+      aiSuggestionLoading.value = true;
+      try {
+        aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
+        if (aiSuggestion.value?.suggestion) {
+          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+        }
+        return aiSuggestion.value;
+      } finally {
+        aiSuggestionLoading.value = false;
+      }
     }
   }
 

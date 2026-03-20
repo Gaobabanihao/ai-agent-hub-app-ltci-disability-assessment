@@ -27,7 +27,8 @@ const {
   submitCurrentAssessment,
   buildSavePayload,
 } = useAssessment();
-const draftLoading = ref(false);
+const draftLoadingStep2 = ref(false);
+const draftLoadingStep3 = ref(false);
 const submitLoading = ref(false);
 
 // 计算结果
@@ -61,17 +62,17 @@ async function handleGenerateAiSuggestionStep2() {
     return;
   }
 
-  draftLoading.value = true;
+  draftLoadingStep2.value = true;
   try {
     // 先创建草稿（如果尚未创建），再生成 AI 建议并自动写入评估项
     await ensureAssessmentDraft();
-    await generateCurrentAiSuggestion();
+    await generateCurrentAiSuggestion(2);
     advanceStep(3);
   } catch (error) {
     const message = error instanceof Error ? error.message : '生成 AI 建议失败';
     ElMessage.error(message);
   } finally {
-    draftLoading.value = false;
+    draftLoadingStep2.value = false;
   }
 }
 
@@ -88,16 +89,16 @@ async function handleGenerateAiSuggestionStep3() {
     return;
   }
 
-  draftLoading.value = true;
+  draftLoadingStep3.value = true;
   try {
     // 先创建草稿（如果尚未创建），再生成 AI 建议并自动写入评估项
     await ensureAssessmentDraft();
-    await generateCurrentAiSuggestion();
+    await generateCurrentAiSuggestion(3);
   } catch (error) {
     const message = error instanceof Error ? error.message : '生成 AI 建议失败';
     ElMessage.error(message);
   } finally {
-    draftLoading.value = false;
+    draftLoadingStep3.value = false;
   }
 }
 
@@ -193,7 +194,7 @@ function handleStepClick(step: number) {
           <div class="step-nav-hint">
             <el-button
               type="primary"
-              :loading="draftLoading"
+              :loading="draftLoadingStep2"
               @click="handleGenerateAiSuggestionStep2"
             >
               <el-icon><ArrowRight /></el-icon>
@@ -208,7 +209,7 @@ function handleStepClick(step: number) {
           <transition name="slide-up">
             <Step4ResultConfirm
               v-if="currentStep >= 2"
-              @confirmed="handleConfirmed"
+              @confirmed="handleConfirm"
             />
           </transition>
         </div>
@@ -232,7 +233,7 @@ function handleStepClick(step: number) {
           <div class="step-nav-hint">
             <el-button
               type="primary"
-              :loading="draftLoading"
+              :loading="draftLoadingStep3"
               @click="handleGenerateAiSuggestionStep3"
             >
               <el-icon><ArrowRight /></el-icon>
@@ -259,10 +260,10 @@ function handleStepClick(step: number) {
           
           <!-- 结果确认底部按钮 -->
           <div class="result-footer">
-            <el-button @click="() => setStep(3)">
+            <!-- <el-button @click="() => setStep(3)">
               <el-icon><ArrowLeft /></el-icon>
               返回修改
-            </el-button>
+            </el-button> -->
             <el-button
               type="primary"
               :disabled="result.gradedCount < assessmentItems.length"
