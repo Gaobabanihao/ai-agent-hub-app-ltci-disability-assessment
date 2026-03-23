@@ -13,6 +13,7 @@ import {
   createInsuredPerson,
   deleteUploadedFile,
   generateAiSuggestion,
+  generateAiSuggestion3,
   getAiSuggestion,
   getInsuredPersonList,
   submitAssessmentResult,
@@ -108,6 +109,10 @@ const aiSuggestion = ref<AiSuggestionResult | null>(null);
 // 分别存储医疗材料和音视频的AI建议
 const medicalAiSuggestion = ref<AiSuggestionResult | null>(null);
 const videoAiSuggestion = ref<AiSuggestionResult | null>(null);
+// 存储自评表结构化提取结果
+const selfAssessmentExtractResult = ref<AiSuggestionResult | null>(null);
+// 自评表结构化提取加载状态
+const selfAssessmentExtractLoading = ref(false);
 const aiSuggestionLoading = ref(false);
 
 // 防止并发点击造成重复创建被保险人/评估草稿。
@@ -371,6 +376,20 @@ export function useAssessment() {
               fileName: parsed.file.fileName,
             }),
           );
+          
+          // 上传自评表后调用generateAiSuggestion3接口获取结构化提取结果
+          try {
+            selfAssessmentExtractLoading.value = true;
+            // 只传递自评表文件，medical和audioVideo参数传递undefined
+            const extractResult = await generateAiSuggestion3(draftId, file, undefined, undefined);
+            selfAssessmentExtractResult.value = extractResult;
+          } catch (error) {
+            console.error('调用generateAiSuggestion3接口失败:', error);
+            // 接口调用失败不影响上传流程
+          } finally {
+            selfAssessmentExtractLoading.value = false;
+          }
+          
           continue;
         }
 
@@ -653,6 +672,8 @@ export function useAssessment() {
     aiSuggestion,
     medicalAiSuggestion,
     videoAiSuggestion,
+    selfAssessmentExtractResult,
+    selfAssessmentExtractLoading,
     aiSuggestionLoading,
     isInfoComplete,
     canGenerateAiSuggestion,

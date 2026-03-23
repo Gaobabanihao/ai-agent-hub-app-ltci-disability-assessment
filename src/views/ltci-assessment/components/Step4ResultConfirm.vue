@@ -17,6 +17,8 @@ const {
   assessmentItems,
   submittedAssessment,
   aiSuggestion,
+  selfAssessmentExtractResult,
+  selfAssessmentExtractLoading,
   aiSuggestionLoading,
   setStep,
   buildSavePayload,
@@ -92,7 +94,13 @@ const keySuggest = computed(() => {
 });
 
 const selfAssessmentOcrResult = computed(() => {
-  return aiSuggestion.value?.selfAssessmentOcrResult;
+  const suggestion = selfAssessmentExtractResult.value?.suggestion;
+  if (!suggestion) return null;
+  try {
+    return JSON.parse(suggestion);
+  } catch {
+    return null;
+  }
 });
 
 const levelTagType = computed(() => {
@@ -274,9 +282,30 @@ function handleBack() {
             <el-icon><Document /></el-icon>
             自评表结果
           </h4>
-          <div v-if="selfAssessmentOcrResult" class="ai-section__content">
-            {{ selfAssessmentOcrResult.value }}
-            <div v-html="selfAssessmentOcrResult" class="self-assessment-content"></div>
+          <div v-if="selfAssessmentExtractLoading" class="ai-section__loading">
+            <el-icon class="is-loading"><Loading /></el-icon>
+            <span>正在分析自评表...</span>
+          </div>
+          <div v-else-if="selfAssessmentOcrResult" class="ai-section__content">
+            <div class="self-assessment-content">
+              <div v-if="selfAssessmentOcrResult['自评表结果']" class="self-assessment-result">
+                <div v-if="selfAssessmentOcrResult['自评表结果']['ADL自评']" class="self-assessment-section">
+                  <h5 class="self-assessment-section__title">ADL自评</h5>
+                  <div class="self-assessment-section__content">
+                    <div v-for="(item, index) in selfAssessmentOcrResult['自评表结果']['ADL自评']" :key="index" class="self-assessment-item">
+                      <span class="self-assessment-item__label">{{ item.项目 }}：</span>
+                      <span class="self-assessment-item__value">{{ item.自评结果 }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="selfAssessmentOcrResult['自评表结果']['自评失能等级']" class="self-assessment-section">
+                  <h5 class="self-assessment-section__title">自评失能等级</h5>
+                  <div class="self-assessment-section__content">
+                    <span class="self-assessment-grade">{{ selfAssessmentOcrResult['自评表结果']['自评失能等级'] }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-else class="ai-section__empty">
             暂无自评表结果
@@ -629,6 +658,17 @@ color: #67c23a;
     color: #999;
     font-size: 13px;
   }
+
+  &__loading {
+    padding: 24px 16px;
+    text-align: center;
+    color: #1e6bb8;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
 }
 
 // ── AI Item ─────────────────────────────────────────────────────────────────
@@ -722,7 +762,68 @@ color: #67c23a;
   li {
     margin-bottom: 4px;
   }
+}
+
+.self-assessment-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.self-assessment-section {
+  background: #fff;
+  border: 1px solid #e8f4fc;
+  border-radius: 6px;
+  padding: 12px;
   
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e6bb8;
+    margin: 0 0 12px 0;
+  }
+  
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.self-assessment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 4px;
+  
+  &__label {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+  }
+  
+  &__value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 600;
+  }
+}
+
+.self-assessment-grade {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e6bb8;
+  padding: 8px 12px;
+  background: #f0f7ff;
+  border: 1px solid #b3d8ff;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.self-assessment-content {
   table {
     width: 100%;
     border-collapse: collapse;

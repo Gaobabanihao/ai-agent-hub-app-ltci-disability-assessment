@@ -398,14 +398,14 @@ export function generateAiSuggestion(assessmentId: number, selfAssessment: File,
 /** 生成 AI 评估建议，结果会自动入库。 提示词二  事中评估 */
 export function generateAiSuggestion2(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
   return postForm<AiSuggestionResult>(
-    `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
+    `${ BASE_URL }/deepseek/inPocessAssessment/${ assessmentId }`,
     createAiSuggestionFormData(selfAssessment, medical, audioVideo),
   );
 }
 /** 生成 AI 评估建议，结果会自动入库。 提示词三  结构化提取 */
 export function generateAiSuggestion3(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
   return postForm<AiSuggestionResult>(
-    `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
+    `${ BASE_URL }/deepseek/self-assessment/extract/${ assessmentId }`,
     createAiSuggestionFormData(selfAssessment, medical, audioVideo),
   );
 }
