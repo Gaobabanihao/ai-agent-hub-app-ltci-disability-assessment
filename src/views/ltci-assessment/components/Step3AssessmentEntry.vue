@@ -6,7 +6,7 @@ import { ASSESSMENT_CATEGORIES, SELF_ASSESSMENT_MAPPING } from '../constants/ass
 
 defineOptions({ name: 'Step3AssessmentEntry' });
 
-const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote, aiSuggestion } = useAssessment();
+const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote, aiSuggestion, medicalAiSuggestion, videoAiSuggestion } = useAssessment();
 const { generateAISuggestion } = useScoring(assessmentItems, files, selfAssessmentData);
 
 // Per-item AI suggestion cache (keyed by itemId)
@@ -21,10 +21,54 @@ const adlRadarData = computed(() => {
     const adlRadar = suggestion['智能评估结果摘要']?.['ADL雷达'] || [];
     const adlMap: Record<string, { 评估: string; 依据: string }> = {};
     adlRadar.forEach((item: any) => {
-      adlMap[item.项目] = {
-        评估: item.评估,
-        依据: item.依据
-      };
+      if (item.项目 && item.依据) {
+        adlMap[item.项目] = {
+          评估: item.评估 || '',
+          依据: item.依据
+        };
+      }
+    });
+    return adlMap;
+  } catch {
+    return {};
+  }
+});
+
+// 解析医疗材料AI建议中的ADL雷达数据
+const medicalAdlRadarData = computed(() => {
+  if (!medicalAiSuggestion.value?.suggestion) return {};
+  try {
+    const suggestion = JSON.parse(medicalAiSuggestion.value.suggestion);
+    const adlRadar = suggestion['智能评估结果摘要']?.['ADL雷达'] || [];
+    const adlMap: Record<string, { 评估: string; 依据: string }> = {};
+    adlRadar.forEach((item: any) => {
+      if (item.项目 && item.依据) {
+        adlMap[item.项目] = {
+          评估: item.评估 || '',
+          依据: item.依据
+        };
+      }
+    });
+    return adlMap;
+  } catch {
+    return {};
+  }
+});
+
+// 解析音视频AI建议中的ADL雷达数据
+const videoAdlRadarData = computed(() => {
+  if (!videoAiSuggestion.value?.suggestion) return {};
+  try {
+    const suggestion = JSON.parse(videoAiSuggestion.value.suggestion);
+    const adlRadar = suggestion['智能评估结果摘要']?.['ADL雷达'] || [];
+    const adlMap: Record<string, { 评估: string; 依据: string }> = {};
+    adlRadar.forEach((item: any) => {
+      if (item.项目 && item.依据) {
+        adlMap[item.项目] = {
+          评估: item.评估 || '',
+          依据: item.依据
+        };
+      }
     });
     return adlMap;
   } catch {
@@ -120,21 +164,27 @@ function onNoteInput(itemId: string, note: string) {
                     <p v-if="files.medical.length > 0">已上传 {{ files.medical.length }} 份医疗材料</p>
                     <p v-else>暂无医疗材料</p>
                     <!-- AI建议 -->
-                    <p v-if="adlRadarData[itemDef.name]" >
-                      {{ adlRadarData[itemDef.name]?.依据 }}
-                      <span v-if="adlRadarData[itemDef.name]?.评估 !== '未知'"> {{ adlRadarData[itemDef.name]?.评估 }}</span>
+                    <p v-if="medicalAdlRadarData[itemDef.name]" >
+                      {{ medicalAdlRadarData[itemDef.name]?.依据 }}
+                      <span v-if="medicalAdlRadarData[itemDef.name]?.评估 !== '未知'"> {{ medicalAdlRadarData[itemDef.name]?.评估 }}</span>
                     </p>
                   </div>
                 </div>
 
                 <!-- 音视频建议 -->
-                <div class="ai-suggestion-panel__section">
+                <!-- <div class="ai-suggestion-panel__section">
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--video">
                     音视频
                   </span>
-                  <p v-if="files.video.length > 0">已上传 {{ files.video.length }} 份音视频材料</p>
-                  <p v-else>暂无音视频材料</p>
-                </div>
+                  <div>
+                    <p v-if="files.video.length > 0">已上传 {{ files.video.length }} 份音视频材料</p>
+                    <p v-else>暂无音视频材料</p>
+                    <p v-if="videoAdlRadarData[itemDef.name]" class="ai-suggestion-text">
+                      {{ videoAdlRadarData[itemDef.name]?.依据 }}
+                      <span v-if="videoAdlRadarData[itemDef.name]?.评估 !== '未知'"> {{ videoAdlRadarData[itemDef.name]?.评估 }}</span>
+                    </p>
+                  </div>
+                </div> -->
 
                 <!-- 自评对比（仅在有自评数据时显示） -->
 

@@ -14,7 +14,7 @@ export interface ResponseData<T = unknown> {
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  timeout: 300000,
+  timeout: 500000,
   headers: {
     'Content-Type': 'application/json',
   },

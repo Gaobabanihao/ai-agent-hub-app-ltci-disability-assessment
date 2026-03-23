@@ -105,6 +105,9 @@ const insuredPersonId = ref<number | null>(null);
 const assessmentId = ref<number | null>(null);
 const submittedAssessment = ref<SubmittedAssessment | null>(null);
 const aiSuggestion = ref<AiSuggestionResult | null>(null);
+// 分别存储医疗材料和音视频的AI建议
+const medicalAiSuggestion = ref<AiSuggestionResult | null>(null);
+const videoAiSuggestion = ref<AiSuggestionResult | null>(null);
 const aiSuggestionLoading = ref(false);
 
 // 防止并发点击造成重复创建被保险人/评估草稿。
@@ -498,13 +501,16 @@ export function useAssessment() {
       // 传递自评表和医疗材料，不传递音视频
       aiSuggestionLoading.value = true;
       try {
-        aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, undefined);
-        console.log('aiSuggestion.value',aiSuggestion.value);
+        const result = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, undefined);
+        // 存储医疗材料的AI建议
+        medicalAiSuggestion.value = result;
+        aiSuggestion.value = result; // 保持兼容性
+        console.log('medicalAiSuggestion.value', medicalAiSuggestion.value);
         
-        if (aiSuggestion.value?.suggestion) {
-          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+        if (result?.suggestion) {
+          applyAiSuggestionToItems(result.suggestion);
         }
-        return aiSuggestion.value;
+        return result;
       } finally {
         aiSuggestionLoading.value = false;
       }
@@ -516,11 +522,14 @@ export function useAssessment() {
       // 传递音视频文件，不传递自评表和医疗材料
       aiSuggestionLoading.value = true;
       try {
-        aiSuggestion.value = await generateAiSuggestion(draftId, undefined, undefined, videoFile);
-        if (aiSuggestion.value?.suggestion) {
-          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
+        const result = await generateAiSuggestion(draftId, undefined, undefined, videoFile);
+        // 存储音视频的AI建议
+        videoAiSuggestion.value = result;
+        aiSuggestion.value = result; // 保持兼容性
+        if (result?.suggestion) {
+          applyAiSuggestionToItems(result.suggestion);
         }
-        return aiSuggestion.value;
+        return result;
       } finally {
         aiSuggestionLoading.value = false;
       }
@@ -642,6 +651,8 @@ export function useAssessment() {
     assessmentId,
     submittedAssessment,
     aiSuggestion,
+    medicalAiSuggestion,
+    videoAiSuggestion,
     aiSuggestionLoading,
     isInfoComplete,
     canGenerateAiSuggestion,
