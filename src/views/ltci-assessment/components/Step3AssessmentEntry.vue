@@ -1,16 +1,36 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { useAssessment } from '../composables/useAssessment';
 import { useScoring, type AISuggestion } from '../composables/useScoring';
 import { ASSESSMENT_CATEGORIES, SELF_ASSESSMENT_MAPPING } from '../constants/assessment-data';
 
 defineOptions({ name: 'Step3AssessmentEntry' });
 
-const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote } = useAssessment();
+const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote, aiSuggestion } = useAssessment();
 const { generateAISuggestion } = useScoring(assessmentItems, files, selfAssessmentData);
 
 // Per-item AI suggestion cache (keyed by itemId)
-const aiSuggestions = reactive<Record<string, AISuggestion>>({});
+const aiSuggestions = reactive<Record<string, AISuggestion>>({
+});
+
+// 解析AI建议中的ADL雷达数据
+const adlRadarData = computed(() => {
+  if (!aiSuggestion.value?.suggestion) return {};
+  try {
+    const suggestion = JSON.parse(aiSuggestion.value.suggestion);
+    const adlRadar = suggestion['智能评估结果摘要']?.['ADL雷达'] || [];
+    const adlMap: Record<string, { 评估: string; 依据: string }> = {};
+    adlRadar.forEach((item: any) => {
+      adlMap[item.项目] = {
+        评估: item.评估,
+        依据: item.依据
+      };
+    });
+    return adlMap;
+  } catch {
+    return {};
+  }
+});
 
 function getItem(itemId: string) {
   return assessmentItems.find((i) => i.itemId === itemId)!;
@@ -96,7 +116,14 @@ function onNoteInput(itemId: string, note: string) {
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--medical">
                     医疗材料
                   </span>
-                  <p>{{ aiSuggestions[itemDef.id]?.medical }}</p>
+                  <div>
+                    <p>{{ aiSuggestions[itemDef.id]?.medical }}</p>
+                    <!-- AI建议 -->
+                    <p v-if="adlRadarData[itemDef.name]" >
+                      {{ adlRadarData[itemDef.name]?.依据 }}
+                      <span v-if="adlRadarData[itemDef.name]?.评估 !== '未知'"> {{ adlRadarData[itemDef.name]?.评估 }}</span>
+                    </p>
+                  </div>
                 </div>
 
                 <!-- 音视频建议 -->
@@ -386,6 +413,20 @@ function onNoteInput(itemId: string, note: string) {
       background: #edf7ed;
       color: #28a745;
     }
+
+    &__tag--ai {
+      background: #f0e6ff;
+      color: #8a2be2;
+    }
+  }
+
+  .ai-suggestion-text {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.7;
+    margin: 8px 0 0 0;
+    padding-left: 10px;
+    border-left: 2px solid #8a2be2;
   }
 }
 
