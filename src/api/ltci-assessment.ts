@@ -388,8 +388,22 @@ export function getAssessmentFiles(assessmentId: number) {
   return get<UploadedFile[]>(`${ BASE_URL }/files/${ assessmentId }`);
 }
 
-/** 生成 AI 评估建议，结果会自动入库。  */
+/** 生成 AI 评估建议，结果会自动入库。 AI解析 */
 export function generateAiSuggestion(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
+  return postForm<AiSuggestionResult>(
+    `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
+    createAiSuggestionFormData(selfAssessment, medical, audioVideo),
+  );
+}
+/** 生成 AI 评估建议，结果会自动入库。 提示词二  事中评估 */
+export function generateAiSuggestion2(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
+  return postForm<AiSuggestionResult>(
+    `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
+    createAiSuggestionFormData(selfAssessment, medical, audioVideo),
+  );
+}
+/** 生成 AI 评估建议，结果会自动入库。 提示词三  结构化提取 */
+export function generateAiSuggestion3(assessmentId: number, selfAssessment: File, medical: File, audioVideo?: File) {
   return postForm<AiSuggestionResult>(
     `${ BASE_URL }/deepseek/suggestion/${ assessmentId }`,
     createAiSuggestionFormData(selfAssessment, medical, audioVideo),
@@ -402,10 +416,7 @@ export function getAiSuggestion(assessmentId: number) {
   return get<AiSuggestionResult>(`${ BASE_URL }/ai/suggestion/${ assessmentId }`);
 }
 
-/** 查询已生成的 AI 评估建议。提示词二 */
-export function getAiSuggestion2(assessmentId: number) {
-  return get<AiSuggestionResult>(`${ BASE_URL }/ai/inProcess/${ assessmentId }`);
-}
+
 
 // ===== 历史记录接口（当前无正式文档，保留兼容） =====
 /** 历史记录兼容接口基础路径。 */
