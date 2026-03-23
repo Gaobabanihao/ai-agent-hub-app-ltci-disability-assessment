@@ -8,6 +8,7 @@ export interface AssessmentItemDef {
   number: string;
   name: string;
   selfItem: string;
+  gradeOptions?: GradeOption[];
 }
 
 export interface AssessmentCategoryDef {
@@ -32,11 +33,82 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
       { value: '2', label: '2级 - 独立' },
     ],
     items: [
-      { id: 'eat', number: '1.1', name: '进食', selfItem: 'eat' },
-      { id: 'wash', number: '1.2', name: '洗漱', selfItem: 'wash' },
-      { id: 'dress', number: '1.3', name: '穿衣', selfItem: 'dress' },
-      { id: 'toilet', number: '1.4', name: '如厕', selfItem: 'toilet' },
-      { id: 'move', number: '1.5', name: '移动', selfItem: 'move' },
+      { 
+        id: 'eat', 
+        number: '1.1', 
+        name: '进食', 
+        selfItem: 'eat',
+        gradeOptions: [
+          { value: '0', label: '0分-较大或完全依赖，或有留置营养管' },
+          { value: '1', label: '5分-需部分帮助(夹菜、盛饭)' },
+          { value: '2', label: '10分-自理(在合理时间内能独立使用餐具进食各种食物，可使用辅助工具独立完成进食，但不包括做饭)' }
+        ]
+      },
+      { 
+        id: 'dress', 
+        number: '1.3', 
+        name: '穿衣', 
+        selfItem: 'dress',
+        gradeOptions: [
+          { value: '0', label: '0分-依赖他人' },
+          { value: '1', label: '5分-需要部分帮助(能自己穿脱衣服或假肢或矫形器，但需他人帮助整理衣物、系扣/鞋带、拉拉链等)' },
+          { value: '2', label: '10分-自理(自己系开纽扣，关开拉链和穿鞋、袜、假肢或矫形器等)' }
+        ]
+      },
+      { 
+        id: 'wash', 
+        number: '1.2', 
+        name: '洗漱', 
+        selfItem: 'wash',
+        gradeOptions: [
+          { value: '0', label: '0分-需要帮助' },
+          { value: '1', label: '5分-独立洗脸、梳头、刷牙、剃须(不包括准备洗脸水、梳子、牙刷等准备工作)' }
+        ]
+      },
+      { 
+        id: 'toilet', 
+        number: '1.4', 
+        name: '大便控制', 
+        selfItem: 'toilet',
+        gradeOptions: [
+          { value: '0', label: '0分-失禁(平均每周≥1次或完全不能控制大便排泄，需要完全依赖他人)' },
+          { value: '1', label: '5分-偶有失禁(每周<1次),或需要他人提示或便秘需要人工帮助取便' },
+          { value: '2', label: '10分-能控制' }
+        ]
+      },
+      { 
+        id: 'toilet2', 
+        number: '1.5', 
+        name: '小便控制', 
+        selfItem: 'toilet2',
+        gradeOptions: [
+          { value: '0', label: '0分-失禁(平均每天≥1次或经常尿失禁，完全需要他人帮忙完成排尿行为；或留置导尿管，但无法自行管理导尿管)' },
+          { value: '1', label: '5分-偶有失禁(每24h<1次，但每周>1次),或需要他人提示)' },
+          { value: '2', label: '10分-能控制(或留置导尿管，可自行管理导尿管)' }
+        ]
+      },
+      { 
+        id: 'move', 
+        number: '1.6', 
+        name: '床椅转移', 
+        selfItem: 'move',
+        gradeOptions: [
+          { value: '0', label: '0分-完全依赖他人，不能坐' },
+          { value: '1', label: '5分-需大量帮助(至少2人，身体帮助),能坐' },
+          { value: '2', label: '10分-需少量帮助(1人搀扶或使用拐杖等辅助工具或扶着墙、周围设施，转移时需他人在旁监护、提示)' },
+          { value: '3', label: '15分-自理' }
+        ]
+      },
+      { 
+        id: 'bath', 
+        number: '1.7', 
+        name: '洗澡', 
+        selfItem: 'bath',
+        gradeOptions: [
+          { value: '0', label: '0分-洗澡过程中需他人帮助' },
+          { value: '1', label: '5分-准备好洗澡水后，可自己独立完成' }
+        ]
+      }
     ],
   },
   {
@@ -114,6 +186,10 @@ export const SELF_ASSESSMENT_MAPPING: Record<string, Record<string, string>> = {
     '0': '依赖（不能独立完成，卧床不起）',
     '1': '部分独立（不能独立完成，需帮助上下床椅）',
     '2': '独立（无须帮助，能自行移动）',
+  },
+  bath: {
+    '0': '依赖（不能独立完成，需他人帮助）',
+    '1': '部分独立（准备好洗澡水后，可自己独立完成）',
   },
   memory: {
     '0': '重度认知障碍',

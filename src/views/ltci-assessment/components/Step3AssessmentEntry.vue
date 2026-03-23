@@ -195,7 +195,7 @@ function onNoteInput(itemId: string, note: string) {
               <label class="grade-row__label">评估等级</label>
               <el-select :model-value="getItem(itemDef.id).grade" placeholder="请选择评估等级" clearable style="width: 260px"
                 @update:model-value="(val) => onGradeChange(itemDef.id, val)">
-                <el-option v-for="opt in category.gradeOptions" :key="opt.value" :label="opt.label"
+                <el-option v-for="opt in (itemDef.gradeOptions || category.gradeOptions)" :key="opt.value" :label="opt.label"
                   :value="opt.value" />
               </el-select>
             </div>
