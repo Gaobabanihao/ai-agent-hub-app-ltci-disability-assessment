@@ -26,6 +26,7 @@ const {
   setStep,
   submitCurrentAssessment,
   buildSavePayload,
+  videoAiSuggestion,
 } = useAssessment();
 const draftLoadingStep2 = ref(false);
 const draftLoadingStep3 = ref(false);
@@ -47,6 +48,37 @@ const hasUploadedRequiredFiles = computed(() => {
 // 检查是否上传了音视频文件
 const hasUploadedVideoFiles = computed(() => {
   return files.video.length > 0;
+});
+
+// 解析视频AI建议结果
+const videoSmartAssessSummary = computed(() => {
+  if (!videoAiSuggestion?.suggestion) return null;
+  try {
+    const parsed = JSON.parse(videoAiSuggestion.suggestion);
+    return parsed['智能评估结果摘要'] || null;
+  } catch {
+    return null;
+  }
+});
+
+const videoPreAssessTip = computed(() => {
+  if (!videoAiSuggestion?.suggestion) return null;
+  try {
+    const parsed = JSON.parse(videoAiSuggestion.suggestion);
+    return parsed['系统预评估提示'] || null;
+  } catch {
+    return null;
+  }
+});
+
+const videoKeySuggest = computed(() => {
+  if (!videoAiSuggestion?.suggestion) return null;
+  try {
+    const parsed = JSON.parse(videoAiSuggestion.suggestion);
+    return parsed['重点建议'] || null;
+  } catch {
+    return null;
+  }
 });
 
 async function handleGenerateAiSuggestionStep2() {
@@ -242,6 +274,135 @@ function handleStepClick(step: number) {
             <span class="step-nav-hint__tip">
               {{ hasUploadedVideoFiles ? '生成 AI 建议' : '请上传音视频文件后再生成 AI 建议' }}
             </span>
+          </div>
+          
+          <!-- 音视频解析结果 -->
+          <div class="video-analysis-result">
+            <!-- <h3>音视频解析结果</h3> -->
+            <div class="ai-result">
+              <!-- 智能评估结果摘要 -->
+              <div class="ai-section">
+                <h4 class="ai-section__title">
+                  <el-icon><Document /></el-icon>
+                  音视频解析结果
+                </h4>
+                <div v-if="videoAiSuggestion && videoAiSuggestion.suggestion" class="ai-section__content">
+                  <div v-if="videoSmartAssessSummary" class="ai-item">
+                    <div v-if="videoSmartAssessSummary['智能评估失能等级建议']" class="ai-item">
+                      <div class="ai-item__label">失能等级建议：</div>
+                      <div class="ai-item__value">{{ videoSmartAssessSummary['智能评估失能等级建议'].区间 }}</div>
+                      <div class="ai-item__desc">{{ videoSmartAssessSummary['智能评估失能等级建议'].依据 }}</div>
+                    </div>
+                    <div v-if="videoSmartAssessSummary['置信度提示']" class="ai-item">
+                      <div class="ai-item__label">置信度：</div>
+                      <div class="ai-item__value">{{ videoSmartAssessSummary['置信度提示'].置信度 }}</div>
+                      <div class="ai-item__desc">{{ videoSmartAssessSummary['置信度提示'].置信度依据 }}</div>
+                    </div>
+                    <div v-if="videoSmartAssessSummary['ADL雷达']" class="ai-item">
+                      <div class="ai-item__label">ADL评估：</div>
+                      <div class="ai-item__list">
+                        <div v-for="(item, index) in videoSmartAssessSummary['ADL雷达']" :key="index" class="ai-item__list-item">
+                          <span class="ai-item__list-label">{{ item.项目 }}：</span>
+                          <span class="ai-item__list-value">{{ item.评估 }}</span>
+                          <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="ai-section__empty">
+                  暂无智能评估结果摘要
+                </div>
+              </div>
+              
+              <!-- 系统预评估提示 -->
+              <div class="ai-section">
+                <h4 class="ai-section__title">
+                  <el-icon><Warning /></el-icon>
+                  系统预评估提示
+                </h4>
+                <div v-if="videoPreAssessTip" class="ai-section__content">
+                  <div v-if="videoPreAssessTip['主要致失能推断原因']" class="ai-item">
+                    <div class="ai-item__label">主要致失能推断原因：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoPreAssessTip['主要致失能推断原因']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.原因 }}：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="videoPreAssessTip['重点评估关注事项']" class="ai-item">
+                    <div class="ai-item__label">重点评估关注事项：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoPreAssessTip['重点评估关注事项']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.事项 }}：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="videoPreAssessTip['高风险标记']" class="ai-item">
+                    <div class="ai-item__label">高风险标记：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoPreAssessTip['高风险标记']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.标记 }}：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="ai-section__empty">
+                  暂无系统预评估提示
+                </div>
+              </div>
+              
+              <!-- 重点建议 -->
+              <div class="ai-section">
+                <h4 class="ai-section__title">
+                  <el-icon><Lightning /></el-icon>
+                  重点建议
+                </h4>
+                <div v-if="videoKeySuggest" class="ai-section__content">
+                  <div v-if="videoKeySuggest['个性化重点提问清单']" class="ai-item">
+                    <div class="ai-item__label">个性化重点提问清单：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoKeySuggest['个性化重点提问清单']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.问题 }}（来源：{{ item.来源 }}）：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="videoKeySuggest['建议重点核实的能力项']" class="ai-item">
+                    <div class="ai-item__label">建议重点核实的能力项：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoKeySuggest['建议重点核实的能力项']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.能力项 }}：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="videoKeySuggest['建议现场/视频重点观察动作']" class="ai-item">
+                    <div class="ai-item__label">建议现场/视频重点观察动作：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in videoKeySuggest['建议现场/视频重点观察动作']" :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.观察动作 }}：</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="ai-section__empty">
+                  暂无重点建议
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
+            <h3>音视频解析结果</h3>
+            <div class="empty-content">
+              <el-icon><VideoPlay /></el-icon>
+              <p>暂未生成音视频解析结果</p>
+              <p class="empty-hint">请上传音视频文件后点击生成AI建议</p>
+            </div>
           </div>
         </div>
       </div>
@@ -493,5 +654,177 @@ function handleStepClick(step: number) {
   background: #fafcff;
   margin-top: 24px;
   border-radius: 8px;
+}
+
+// ── Video Analysis Result ────────────────────────────────────────────────────
+
+.video-analysis-result {
+  margin-top: 24px;
+}
+
+.video-analysis-result h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.video-analysis-result-empty {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f8fafc;
+  border: 1px dashed #e8f4fc;
+  border-radius: 8px;
+  text-align: center;
+  color: #999;
+}
+
+.video-analysis-result-empty h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.video-analysis-result-empty .empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-analysis-result-empty .empty-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+// ── AI Result ────────────────────────────────────────────────────────────────
+
+.ai-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── AI Section ───────────────────────────────────────────────────────────────
+
+.ai-section {
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e6bb8;
+    padding: 12px 16px;
+    background: #e8f4fc;
+    margin: 0;
+  }
+
+  &__content {
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+  }
+
+  &__loading {
+    padding: 24px 16px;
+    text-align: center;
+    color: #1e6bb8;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+}
+
+// ── AI Item ──────────────────────────────────────────────────────────────────
+
+.ai-item {
+  margin-bottom: 16px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e8f4fc;
+    border-radius: 6px;
+  }
+
+  &__list-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+  }
+
+  &__list-value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+  }
+
+  &__list-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+  }
 }
 </style>
