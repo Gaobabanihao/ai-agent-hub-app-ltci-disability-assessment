@@ -84,11 +84,12 @@ function onNoteInput(itemId: string, note: string) {
                   </el-icon>
                   材料参考建议
                 </div>
-                <div v-if="aiSuggestions[itemDef.id]?.selfAssessment" class="ai-suggestion-panel__section">
+                <!-- 自评结果 -->
+                <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined" class="ai-suggestion-panel__section">
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--self">
                     自评
                   </span>
-                  <p>{{ aiSuggestions[itemDef.id]?.selfAssessment }}</p>
+                  <p>客户自评{{ itemDef.name }}为 {{ selfAssessmentData[itemDef.selfItem] }} 级</p>
                 </div>
                 <!-- 医疗材料建议 -->
                 <div class="ai-suggestion-panel__section">
