@@ -117,7 +117,8 @@ function onNoteInput(itemId: string, note: string) {
                     医疗材料
                   </span>
                   <div>
-                    <p>{{ aiSuggestions[itemDef.id]?.medical }}</p>
+                    <p v-if="files.medical.length > 0">已上传 {{ files.medical.length }} 份医疗材料</p>
+                    <p v-else>暂无医疗材料</p>
                     <!-- AI建议 -->
                     <p v-if="adlRadarData[itemDef.name]" >
                       {{ adlRadarData[itemDef.name]?.依据 }}
@@ -131,7 +132,8 @@ function onNoteInput(itemId: string, note: string) {
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--video">
                     音视频
                   </span>
-                  <p>{{ aiSuggestions[itemDef.id]?.video }}</p>
+                  <p v-if="files.video.length > 0">已上传 {{ files.video.length }} 份音视频材料</p>
+                  <p v-else>暂无音视频材料</p>
                 </div>
 
                 <!-- 自评对比（仅在有自评数据时显示） -->
