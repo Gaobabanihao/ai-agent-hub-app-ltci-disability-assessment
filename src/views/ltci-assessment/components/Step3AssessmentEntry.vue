@@ -6,7 +6,23 @@ import { ASSESSMENT_CATEGORIES, SELF_ASSESSMENT_MAPPING } from '../constants/ass
 
 defineOptions({ name: 'Step3AssessmentEntry' });
 
-const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote, aiSuggestion, medicalAiSuggestion, videoAiSuggestion } = useAssessment();
+const { files, selfAssessmentData, assessmentItems, updateGrade, updateNote, aiSuggestion, medicalAiSuggestion, videoAiSuggestion, selfAssessmentExtractResult } = useAssessment();
+
+// 解析自评表结果
+const selfAssessmentOcrResult = computed(() => {
+  if (!selfAssessmentExtractResult.value?.suggestion) return null;
+  try {
+    return JSON.parse(selfAssessmentExtractResult.value.suggestion);
+  } catch {
+    return null;
+  }
+});
+
+// 获取自评结果
+function getSelfAssessmentResult(itemName: string) {
+  if (!selfAssessmentOcrResult.value?.['自评表结果']?.['ADL自评']) return null;
+  return selfAssessmentOcrResult.value['自评表结果']['ADL自评'].find((item: any) => item.项目 === itemName);
+}
 const { generateAISuggestion } = useScoring(assessmentItems, files, selfAssessmentData);
 
 // Per-item AI suggestion cache (keyed by itemId)
@@ -149,11 +165,12 @@ function onNoteInput(itemId: string, note: string) {
                   材料参考建议
                 </div>
                 <!-- 自评结果 -->
-                <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined" class="ai-suggestion-panel__section">
+                <div v-if="selfAssessmentData[itemDef.selfItem] !== undefined || getSelfAssessmentResult(itemDef.name)" class="ai-suggestion-panel__section">
                   <span class="ai-suggestion-panel__tag ai-suggestion-panel__tag--self">
                     自评
                   </span>
-                  <p>客户自评{{ itemDef.name }}为 {{ selfAssessmentData[itemDef.selfItem] }} 级</p>
+                  <p v-if="getSelfAssessmentResult(itemDef.name)">{{ getSelfAssessmentResult(itemDef.name).项目 }}自评结果为{{ getSelfAssessmentResult(itemDef.name).自评结果 }}</p>
+                  <p v-else>客户自评{{ itemDef.name }}为 {{ selfAssessmentData[itemDef.selfItem] }} 级</p>
                 </div>
                 <!-- 医疗材料建议 -->
                 <div class="ai-suggestion-panel__section">

@@ -50,7 +50,7 @@ const SELF_ASSESSMENT_KEYS = [
 // 兼容历史记录里仍使用中文 key 的自评数据。
 const LEGACY_SELF_ASSESSMENT_KEY_MAP: Record<string, string> = {
   进食: 'eat',
-  洗漱: 'wash',
+  洗澡: 'wash',
   穿衣: 'dress',
   如厕: 'toilet',
   移动: 'move',

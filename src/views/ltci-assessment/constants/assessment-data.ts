@@ -58,7 +58,7 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
       { 
         id: 'wash', 
         number: '1.2', 
-        name: '洗漱', 
+        name: '洗澡', 
         selfItem: 'wash',
         gradeOptions: [
           { value: '0', label: '0分-需要帮助' },
