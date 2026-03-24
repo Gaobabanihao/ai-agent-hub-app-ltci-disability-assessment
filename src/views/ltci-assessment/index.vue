@@ -311,7 +311,7 @@ function handleStepClick(step: number) {
                   </div>
                 </div>
                 <div v-else class="ai-section__empty">
-                  暂无智能评估结果摘要
+                  暂无音视频解析结果
                 </div>
               </div>
               
