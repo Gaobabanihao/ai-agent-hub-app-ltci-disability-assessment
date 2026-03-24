@@ -141,7 +141,7 @@ function onNoteInput(itemId: string, note: string) {
               </div>
             </div> -->
             <transition name="fade">
-              <div class="ai-suggestion-panel">
+              <div v-if="!['cognitive', 'emotion', 'sensory'].includes(category.id)" class="ai-suggestion-panel">
                 <div class="ai-suggestion-panel__title">
                   <el-icon>
                     <MagicStick />

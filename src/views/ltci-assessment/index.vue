@@ -275,9 +275,16 @@ function handleStepClick(step: number) {
               {{ hasUploadedVideoFiles ? '生成 AI 建议' : '请上传音视频文件后再生成 AI 建议' }}
             </span>
           </div>
-          
+             <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
+            <h3>音视频解析结果</h3>
+            <div class="empty-content">
+              <el-icon><VideoPlay /></el-icon>
+              <p>暂未生成音视频解析结果</p>
+              <p class="empty-hint">请上传音视频文件后点击生成AI建议</p>
+            </div>
+          </div>
           <!-- 音视频解析结果 -->
-          <div class="video-analysis-result">
+          <div class="video-analysis-result" v-else>
             <!-- <h3>音视频解析结果</h3> -->
             <div class="ai-result">
               <!-- 智能评估结果摘要 -->
@@ -310,13 +317,11 @@ function handleStepClick(step: number) {
                     </div>
                   </div>
                 </div>
-                <div v-else class="ai-section__empty">
-                  暂无音视频解析结果
-                </div>
+          
               </div>
               
               <!-- 系统预评估提示 -->
-              <div class="ai-section">
+              <!-- <div class="ai-section">
                 <h4 class="ai-section__title">
                   <el-icon><Warning /></el-icon>
                   系统预评估提示
@@ -353,10 +358,10 @@ function handleStepClick(step: number) {
                 <div v-else class="ai-section__empty">
                   暂无系统预评估提示
                 </div>
-              </div>
+              </div> -->
               
               <!-- 重点建议 -->
-              <div class="ai-section">
+              <!-- <div class="ai-section">
                 <h4 class="ai-section__title">
                   <el-icon><Lightning /></el-icon>
                   重点建议
@@ -393,17 +398,10 @@ function handleStepClick(step: number) {
                 <div v-else class="ai-section__empty">
                   暂无重点建议
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
-          <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
-            <h3>音视频解析结果</h3>
-            <div class="empty-content">
-              <el-icon><VideoPlay /></el-icon>
-              <p>暂未生成音视频解析结果</p>
-              <p class="empty-hint">请上传音视频文件后点击生成AI建议</p>
-            </div>
-          </div>
+       
         </div>
       </div>
 
