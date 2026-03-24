@@ -40,25 +40,28 @@ const SELF_ASSESSMENT_KEYS = [
   'toilet',
   'move',
   'memory',
-  'orientation',
-  'emotion',
-  'social',
+  'timeOrientation',
+  'personOrientation',
+  'spaceOrientation',
   'vision',
-  'language',
+  'hearing',
+  'communication',
 ] as const;
 
 // 兼容历史记录里仍使用中文 key 的自评数据。
 const LEGACY_SELF_ASSESSMENT_KEY_MAP: Record<string, string> = {
   进食: 'eat',
-  洗澡: 'wash',
+  洗漱: 'wash',
   穿衣: 'dress',
   如厕: 'toilet',
   移动: 'move',
   记忆力: 'memory',
-  定向力: 'orientation',
-  情绪稳定性: 'emotion',
-  社交能力: 'social',
+  时间定向: 'timeOrientation',
+  人物定向: 'personOrientation',
+  空间定向: 'spaceOrientation',
   视觉: 'vision',
+  听力: 'hearing',
+  沟通能力: 'communication',
   语言表达: 'language',
 };
 

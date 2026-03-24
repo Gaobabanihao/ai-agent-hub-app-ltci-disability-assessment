@@ -133,7 +133,6 @@ function onNoteInput(itemId: string, note: string) {
         <div class="category-header">
           <span class="category-header__number">{{ category.number }}</span>
           <h3 class="category-header__title">{{ category.name }}</h3>
-          <span class="category-header__standard">{{ category.standardDesc }}</span>
         </div>
 
         <!-- 评估项目 -->
