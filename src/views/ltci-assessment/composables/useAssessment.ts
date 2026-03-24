@@ -13,6 +13,7 @@ import {
   createInsuredPerson,
   deleteUploadedFile,
   generateAiSuggestion,
+  generateAiSuggestion2,
   generateAiSuggestion3,
   getAiSuggestion,
   getInsuredPersonList,
@@ -541,7 +542,7 @@ export function useAssessment() {
       // 传递音视频文件，不传递自评表和医疗材料
       aiSuggestionLoading.value = true;
       try {
-        const result = await generateAiSuggestion(draftId, undefined, undefined, videoFile);
+        const result = await generateAiSuggestion2(draftId, undefined, undefined, videoFile);
         // 存储音视频的AI建议
         videoAiSuggestion.value = result;
         aiSuggestion.value = result; // 保持兼容性
