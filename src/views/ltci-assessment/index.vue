@@ -15,12 +15,12 @@ import Step4ResultConfirm from './components/Step4ResultConfirm.vue';
 defineOptions({ name: 'LtciAssessmentPage' });
 
 const router = useRouter();
-const {  
-  currentStep,  
-  validateBasicInfo,  
-  ensureAssessmentDraft,  
-  advanceStep,  
-  files,  
+const {
+  currentStep,
+  validateBasicInfo,
+  ensureAssessmentDraft,
+  advanceStep,
+  files,
   generateCurrentAiSuggestion,
   assessmentItems,
   setStep,
@@ -51,10 +51,11 @@ const hasUploadedVideoFiles = computed(() => {
 });
 
 // 解析视频AI建议结果
+
 const videoSmartAssessSummary = computed(() => {
   if (!videoAiSuggestion?.suggestion) return null;
   try {
-    const parsed = JSON.parse(videoAiSuggestion.suggestion);
+    const parsed = JSON.parse(videoAiSuggestion?.suggestion)
     return parsed['智能评估结果摘要'] || null;
   } catch {
     return null;
@@ -186,11 +187,15 @@ function handleStepClick(step: number) {
     <div class="page-header sticky-header">
       <div class="page-header__inner">
         <div class="page-header__title">
-          <el-icon><Medal /></el-icon>
+          <el-icon>
+            <Medal />
+          </el-icon>
           <h1>长期护理保险失能等级评估系统</h1>
         </div>
         <el-button plain size="small" @click="router.push('/ltci-assessment/history')">
-          <el-icon><Clock /></el-icon>
+          <el-icon>
+            <Clock />
+          </el-icon>
           历史记录
         </el-button>
       </div>
@@ -204,7 +209,9 @@ function handleStepClick(step: number) {
       <!-- Step 1: 基本信息填写 -->
       <div id="step1" class="step-section">
         <div class="card-header">
-          <el-icon><UserFilled /></el-icon>
+          <el-icon>
+            <UserFilled />
+          </el-icon>
           <h2>基本信息填写</h2>
         </div>
         <div class="step-content">
@@ -215,34 +222,31 @@ function handleStepClick(step: number) {
       <!-- Step 2: AI事前预评估分析 -->
       <div id="step2" class="step-section">
         <div class="card-header">
-          <el-icon><MagicStick /></el-icon>
+          <el-icon>
+            <MagicStick />
+          </el-icon>
           <h2>AI事前预评估分析</h2>
         </div>
         <div class="step-content">
           <!-- 文件上传：仅自评表和医疗材料 -->
           <Step2FileUpload />
-          
+
           <!-- 生成AI建议按钮 -->
           <div class="step-nav-hint">
-            <el-button
-              type="primary"
-              :loading="draftLoadingStep2"
-              @click="handleGenerateAiSuggestionStep2"
-            >
-              <el-icon><ArrowRight /></el-icon>
+            <el-button type="primary" :loading="draftLoadingStep2" @click="handleGenerateAiSuggestionStep2">
+              <el-icon>
+                <ArrowRight />
+              </el-icon>
               生成 AI 建议
             </el-button>
             <span class="step-nav-hint__tip">
               {{ hasUploadedRequiredFiles ? '生成 AI 建议后可进入事中/后建议' : '请至少上传自评表或医疗材料后再生成 AI 建议' }}
             </span>
           </div>
-          
+
           <!-- 评估结果确认 -->
           <transition name="slide-up">
-            <Step4ResultConfirm
-              v-if="currentStep >= 2"
-              @confirmed="handleConfirm"
-            />
+            <Step4ResultConfirm v-if="currentStep >= 2" @confirmed="handleConfirm" />
           </transition>
         </div>
       </div>
@@ -250,7 +254,9 @@ function handleStepClick(step: number) {
       <!-- Step 3: 事中/后建议 -->
       <div id="step3" class="step-section">
         <div class="card-header">
-           <el-icon><Promotion /></el-icon>
+          <el-icon>
+            <Promotion />
+          </el-icon>
           <h2>事中/后建议</h2>
         </div>
         <div class="step-content">
@@ -260,25 +266,25 @@ function handleStepClick(step: number) {
             <p class="video-upload-section__desc">请上传评估过程中的音视频材料，用于辅助评估。</p>
             <Step3VideoUpload />
           </div>
-          
+
           <!-- 生成AI建议按钮 -->
           <div class="step-nav-hint">
-            <el-button
-              type="primary"
-              :loading="draftLoadingStep3"
-              @click="handleGenerateAiSuggestionStep3"
-            >
-              <el-icon><ArrowRight /></el-icon>
+            <el-button type="primary" :loading="draftLoadingStep3" @click="handleGenerateAiSuggestionStep3">
+              <el-icon>
+                <ArrowRight />
+              </el-icon>
               生成 AI 建议
             </el-button>
             <span class="step-nav-hint__tip">
               {{ hasUploadedVideoFiles ? '生成 AI 建议' : '请上传音视频文件后再生成 AI 建议' }}
             </span>
           </div>
-             <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
+          <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
             <h3>音视频解析结果</h3>
             <div class="empty-content">
-              <el-icon><VideoPlay /></el-icon>
+              <el-icon>
+                <VideoPlay />
+              </el-icon>
               <p>暂未生成音视频解析结果</p>
               <p class="empty-hint">请上传音视频文件后点击生成AI建议</p>
             </div>
@@ -290,23 +296,41 @@ function handleStepClick(step: number) {
               <!-- 智能评估结果摘要 -->
               <div class="ai-section">
                 <h4 class="ai-section__title">
-                  <el-icon><Document /></el-icon>
+                  <el-icon>
+                    <Document />
+                  </el-icon>
                   音视频解析结果
                 </h4>
-                {{videoAiSuggestion?.suggestion}}
+                {{ videoAiSuggestion?.suggestion }}
+                <!-- <div class="ai-section__content">
+
+                  <div class="ai-item">
+                    <div class="ai-item__label">ADL评估：</div>
+                    <div class="ai-item__list">
+                      <div v-for="(item, index) in JSON.parse(videoAiSuggestion?.suggestion)['智能评估结果摘要'].['ADL雷达']"
+                        :key="index" class="ai-item__list-item">
+                        <span class="ai-item__list-label">{{ item.项目 }}：</span>
+                        <span class="ai-item__list-value">{{ item.评估 }}</span>
+                        <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div> -->
               </div>
-              
-           
+
+
             </div>
           </div>
-       
+
         </div>
       </div>
 
       <!-- Step 4: 量表录入 -->
       <div id="step4" class="step-section">
         <div class="card-header">
-          <el-icon><DataAnalysis /></el-icon>
+          <el-icon>
+            <DataAnalysis />
+          </el-icon>
           <h2>量表录入</h2>
         </div>
         <div class="step-content">
@@ -314,20 +338,18 @@ function handleStepClick(step: number) {
           <transition name="slide-up">
             <Step3AssessmentEntry />
           </transition>
-          
+
           <!-- 结果确认底部按钮 -->
           <div class="result-footer">
             <!-- <el-button @click="() => setStep(3)">
               <el-icon><ArrowLeft /></el-icon>
               返回修改
             </el-button> -->
-            <el-button
-              type="primary"
-              :disabled="result.gradedCount < assessmentItems.length"
-              :loading="submitLoading"
-              @click="handleConfirm"
-            >
-              <el-icon><CircleCheck /></el-icon>
+            <el-button type="primary" :disabled="result.gradedCount < assessmentItems.length" :loading="submitLoading"
+              @click="handleConfirm">
+              <el-icon>
+                <CircleCheck />
+              </el-icon>
               确认提交结果
             </el-button>
           </div>
@@ -663,7 +685,7 @@ function handleStepClick(step: number) {
 
 .ai-item {
   margin-bottom: 16px;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
