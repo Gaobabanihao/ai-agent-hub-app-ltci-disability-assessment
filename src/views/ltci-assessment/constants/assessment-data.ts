@@ -130,8 +130,8 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
         selfItem: 'up_down',
         gradeOptions: [
           { value: '0', label: '0分-不能，或需极大帮助或完全依赖他人' },
-          { value: '1', label: '需要部分帮助(需扶着楼梯、他人搀扶、使用拐杖 或需他人在旁提示)' },
-          { value: '2', label: '独立上下楼(可借助电梯等，如果使用支具，需可 独自完成穿、脱动作)' }
+          { value: '1', label: '5分-需要部分帮助(需扶着楼梯、他人搀扶、使用拐杖 或需他人在旁提示)' },
+          { value: '2', label: '10分-独立上下楼(可借助电梯等，如果使用支具，需可 独自完成穿、脱动作)' }
         ]
       },
       { 
