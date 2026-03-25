@@ -293,11 +293,11 @@ function handleBack() {
             </el-icon>
             自评表结果
           </h4>
-          <div v-if="false" class="ai-section__loading">
+          <div v-if="selfAssessmentExtractLoading" class="ai-section__loading">
             <el-icon class="is-loading">
               <Loading />
             </el-icon>
-            <span>正在分析自评表...</span>
+            <span>解析中...</span>
           </div>
           <div v-else-if="selfAssessmentOcrResult" class="ai-section__content">
             <div class="self-assessment-content">

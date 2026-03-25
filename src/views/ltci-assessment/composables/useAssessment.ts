@@ -381,19 +381,6 @@ export function useAssessment() {
             }),
           );
           
-          // 上传自评表后调用generateAiSuggestion3接口获取结构化提取结果
-          try {
-            selfAssessmentExtractLoading.value = true;
-            // 只传递自评表文件，medical和audioVideo参数传递undefined
-            const extractResult = await generateAiSuggestion3(draftId, file, undefined, undefined);
-            selfAssessmentExtractResult.value = extractResult;
-          } catch (error) {
-            console.error('调用generateAiSuggestion3接口失败:', error);
-            // 接口调用失败不影响上传流程
-          } finally {
-            selfAssessmentExtractLoading.value = false;
-          }
-          
           continue;
         }
 
@@ -410,7 +397,29 @@ export function useAssessment() {
     }
 
     files[type].push(...uploadedFiles);
+    
+    // 先前进到步骤2，确保Step4ResultConfirm组件被渲染
     advanceStep(2);
+    
+    // 如果是自评表上传，在文件显示后调用generateAiSuggestion3接口
+    if (type === 'selfAssessment' && uploadedFiles.length > 0) {
+      // 使用setTimeout确保组件已经渲染完成
+      setTimeout(async () => {
+        try {
+          selfAssessmentExtractLoading.value = true;
+          const draftId = await ensureAssessmentDraft();
+          const selfAssessmentFile = uploadedFiles[0].file;
+          // 只传递自评表文件，medical和audioVideo参数传递undefined
+          const extractResult = await generateAiSuggestion3(draftId, selfAssessmentFile, undefined, undefined);
+          selfAssessmentExtractResult.value = extractResult;
+        } catch (error) {
+          console.error('调用generateAiSuggestion3接口失败:', error);
+          // 接口调用失败不影响上传流程
+        } finally {
+          selfAssessmentExtractLoading.value = false;
+        }
+      }, 100);
+    }
   }
 
   async function removeFile(type: FileUploadType, id: string) {
