@@ -46,7 +46,7 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
       },
       { 
         id: 'dress', 
-        number: '1.3', 
+        number: '1.2', 
         name: '穿衣', 
         selfItem: 'dress',
         gradeOptions: [
@@ -56,15 +56,16 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
         ]
       },
       { 
-        id: 'wash', 
-        number: '1.2', 
-        name: '洗澡', 
-        selfItem: 'wash',
+        id: 'wash2', 
+        number: '1.3', 
+        name: '面部与口腔清洁', 
+        selfItem: 'wash2',
         gradeOptions: [
           { value: '0', label: '0分-需要帮助' },
-          { value: '1', label: '5分-独立洗脸、梳头、刷牙、剃须(不包括准备洗脸水、梳子、牙刷等准备工作)' }
+          { value: '1', label: '5分-独立洗脸、梳头、刷牙、剃须(不包括准备洗脸水、 梳子、牙刷等准备工作' },
         ]
       },
+  
       { 
         id: 'toilet', 
         number: '1.4', 
@@ -88,8 +89,31 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
         ]
       },
       { 
-        id: 'move', 
+        id: 'toilet3', 
         number: '1.6', 
+        name: '用厕', 
+        selfItem: 'toilet3',
+        gradeOptions: [
+          { value: '0', label: '0分-需要极大地帮助或完全依赖他人' },
+          { value: '1', label: '需部分帮助(需他人帮忙整理衣裤、坐上/蹲上便器等)' },
+          { value: '2', label: '10分-自理(能够使用厕纸、穿脱裤子等)' }
+        ]
+      },
+      { 
+        id: 'move2', 
+        number: '1.7', 
+        name: '平地行走', 
+        selfItem: 'move2',
+        gradeOptions: [
+          { value: '0', label: '0分-卧床不起、不能步行、移动需要完全帮助' },
+          { value: '1', label: '5分-在较大程度上依赖他人搀扶(≥2人)或依赖他人帮 助使用轮椅等辅助工具才能移动' },
+          { value: '2', label: '10分-需少量帮助(需1人搀扶或需他人在旁提示或在他 人帮助下使用辅助工具)' },
+          { value: '3', label: '15分-独立步行(自行使用辅助工具，在家及附近等日常 生活活动范围内独立步行)' }
+        ]
+      },
+      { 
+        id: 'move', 
+        number: '1.8', 
         name: '床椅转移', 
         selfItem: 'move',
         gradeOptions: [
@@ -100,8 +124,19 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
         ]
       },
       { 
+        id: 'up_down', 
+        number: '1.9', 
+        name: '上下楼', 
+        selfItem: 'up_down',
+        gradeOptions: [
+          { value: '0', label: '0分-不能，或需极大帮助或完全依赖他人' },
+          { value: '1', label: '需要部分帮助(需扶着楼梯、他人搀扶、使用拐杖 或需他人在旁提示)' },
+          { value: '2', label: '独立上下楼(可借助电梯等，如果使用支具，需可 独自完成穿、脱动作)' }
+        ]
+      },
+      { 
         id: 'bath', 
-        number: '1.7', 
+        number: '1.10', 
         name: '洗澡', 
         selfItem: 'bath',
         gradeOptions: [
