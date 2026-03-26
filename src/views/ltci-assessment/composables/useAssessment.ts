@@ -557,11 +557,6 @@ export function useAssessment() {
         const result = await generateAiSuggestion2(draftId, undefined, undefined, videoFile);
         // 存储音视频的AI建议
         videoAiSuggestion.value = result;
-        aiSuggestion.value = result; // 保持兼容性
-        if (result?.suggestion) {
-          applyAiSuggestionToItems(result.suggestion);
-        }
-        return result;
       } finally {
         aiSuggestionLoading.value = false;
       }

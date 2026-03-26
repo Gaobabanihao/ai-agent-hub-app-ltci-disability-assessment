@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { useAssessment } from './composables/useAssessment';
-import { useScoring } from './composables/useScoring';
-import { useLtciAssessmentStore } from '@/store/modules/ltci-assessment';
-import StepProgress from './components/StepProgress.vue';
-import Step1InfoEntry from './components/Step1InfoEntry.vue';
-import Step2FileUpload from './components/Step2FileUpload.vue';
-import Step3VideoUpload from './components/Step3VideoUpload.vue';
-import Step3AssessmentEntry from './components/Step3AssessmentEntry.vue';
-import Step4ResultConfirm from './components/Step4ResultConfirm.vue';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useAssessment } from "./composables/useAssessment";
+import { useScoring } from "./composables/useScoring";
+import { useLtciAssessmentStore } from "@/store/modules/ltci-assessment";
+import StepProgress from "./components/StepProgress.vue";
+import Step1InfoEntry from "./components/Step1InfoEntry.vue";
+import Step2FileUpload from "./components/Step2FileUpload.vue";
+import Step3VideoUpload from "./components/Step3VideoUpload.vue";
+import Step3AssessmentEntry from "./components/Step3AssessmentEntry.vue";
+import Step4ResultConfirm from "./components/Step4ResultConfirm.vue";
 
-defineOptions({ name: 'LtciAssessmentPage' });
+defineOptions({ name: "LtciAssessmentPage" });
 
 const router = useRouter();
 const {
@@ -33,11 +33,7 @@ const draftLoadingStep3 = ref(false);
 const submitLoading = ref(false);
 
 // 计算结果
-const { calculateResult } = useScoring(
-  assessmentItems,
-  files,
-  null
-);
+const { calculateResult } = useScoring(assessmentItems, files, null);
 const result = computed(() => calculateResult());
 
 // 检查是否上传了自评表或医疗材料
@@ -51,12 +47,12 @@ const hasUploadedVideoFiles = computed(() => {
 });
 
 // 解析视频AI建议结果
-
-const videoSmartAssessSummary = computed(() => {
-  if (!videoAiSuggestion?.suggestion) return null;
+const videoResult = computed(() => {
+  const suggestion = videoAiSuggestion.value?.suggestion;
+  if (!suggestion) return null;
   try {
-    const parsed = JSON.parse(videoAiSuggestion?.suggestion)
-    return parsed['智能评估结果摘要'] || null;
+    console.log(JSON.parse(suggestion));
+    return JSON.parse(suggestion);
   } catch {
     return null;
   }
@@ -66,7 +62,7 @@ const videoPreAssessTip = computed(() => {
   if (!videoAiSuggestion?.suggestion) return null;
   try {
     const parsed = JSON.parse(videoAiSuggestion.suggestion);
-    return parsed['系统预评估提示'] || null;
+    return parsed["系统预评估提示"] || null;
   } catch {
     return null;
   }
@@ -76,7 +72,7 @@ const videoKeySuggest = computed(() => {
   if (!videoAiSuggestion?.suggestion) return null;
   try {
     const parsed = JSON.parse(videoAiSuggestion.suggestion);
-    return parsed['重点建议'] || null;
+    return parsed["重点建议"] || null;
   } catch {
     return null;
   }
@@ -91,7 +87,7 @@ async function handleGenerateAiSuggestionStep2() {
   }
 
   if (!hasUploadedRequiredFiles.value) {
-    ElMessage.warning('请至少上传自评表或医疗材料后再生成 AI 建议');
+    ElMessage.warning("请至少上传自评表或医疗材料后再生成 AI 建议");
     return;
   }
 
@@ -102,7 +98,7 @@ async function handleGenerateAiSuggestionStep2() {
     await generateCurrentAiSuggestion(2);
     advanceStep(3);
   } catch (error) {
-    const message = error instanceof Error ? error.message : '生成 AI 建议失败';
+    const message = error instanceof Error ? error.message : "生成 AI 建议失败";
     ElMessage.error(message);
   } finally {
     draftLoadingStep2.value = false;
@@ -118,7 +114,7 @@ async function handleGenerateAiSuggestionStep3() {
   }
 
   if (!hasUploadedVideoFiles.value) {
-    ElMessage.warning('请上传音视频文件后再生成 AI 建议');
+    ElMessage.warning("请上传音视频文件后再生成 AI 建议");
     return;
   }
 
@@ -128,7 +124,7 @@ async function handleGenerateAiSuggestionStep3() {
     await ensureAssessmentDraft();
     await generateCurrentAiSuggestion(3);
   } catch (error) {
-    const message = error instanceof Error ? error.message : '生成 AI 建议失败';
+    const message = error instanceof Error ? error.message : "生成 AI 建议失败";
     ElMessage.error(message);
   } finally {
     draftLoadingStep3.value = false;
@@ -138,13 +134,13 @@ async function handleGenerateAiSuggestionStep3() {
 async function handleConfirm() {
   try {
     await ElMessageBox.confirm(
-      '确认提交本次评估结果？提交后将生成正式评估报告。',
-      '确认提交',
+      "确认提交本次评估结果？提交后将生成正式评估报告。",
+      "确认提交",
       {
-        confirmButtonText: '确认提交',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
+        confirmButtonText: "确认提交",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
     );
   } catch {
     return;
@@ -161,7 +157,8 @@ async function handleConfirm() {
     setStep(4);
     ElMessage.success(`评估结果已成功提交：${submitted.finalGrade}`);
   } catch (error) {
-    const message = error instanceof Error ? error.message : '提交失败，请稍后重试';
+    const message =
+      error instanceof Error ? error.message : "提交失败，请稍后重试";
     ElMessage.error(message);
   } finally {
     submitLoading.value = false;
@@ -175,7 +172,7 @@ function handleStepClick(step: number) {
     const stepId = `step${step}`;
     const element = document.getElementById(stepId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   }
 }
@@ -192,7 +189,11 @@ function handleStepClick(step: number) {
           </el-icon>
           <h1>长期护理保险失能等级评估系统</h1>
         </div>
-        <el-button plain size="small" @click="router.push('/ltci-assessment/history')">
+        <el-button
+          plain
+          size="small"
+          @click="router.push('/ltci-assessment/history')"
+        >
           <el-icon>
             <Clock />
           </el-icon>
@@ -233,20 +234,31 @@ function handleStepClick(step: number) {
 
           <!-- 生成AI建议按钮 -->
           <div class="step-nav-hint">
-            <el-button type="primary" :loading="draftLoadingStep2" @click="handleGenerateAiSuggestionStep2">
+            <el-button
+              type="primary"
+              :loading="draftLoadingStep2"
+              @click="handleGenerateAiSuggestionStep2"
+            >
               <el-icon>
                 <ArrowRight />
               </el-icon>
               生成 AI 建议
             </el-button>
             <span class="step-nav-hint__tip">
-              {{ hasUploadedRequiredFiles ? '生成 AI 建议后可进入事中/后建议' : '请至少上传自评表或医疗材料后再生成 AI 建议' }}
+              {{
+                hasUploadedRequiredFiles
+                  ? "生成 AI 建议后可进入事中/后建议"
+                  : "请至少上传自评表或医疗材料后再生成 AI 建议"
+              }}
             </span>
           </div>
 
           <!-- 评估结果确认 -->
           <transition name="slide-up">
-            <Step4ResultConfirm v-if="currentStep >= 2" @confirmed="handleConfirm" />
+            <Step4ResultConfirm
+              v-if="currentStep >= 2"
+              @confirmed="handleConfirm"
+            />
           </transition>
         </div>
       </div>
@@ -263,23 +275,36 @@ function handleStepClick(step: number) {
           <!-- 音视频上传 -->
           <div class="video-upload-section">
             <h3>音视频材料上传</h3>
-            <p class="video-upload-section__desc">请上传评估过程中的音视频材料，用于辅助评估。</p>
+            <p class="video-upload-section__desc">
+              请上传评估过程中的音视频材料，用于辅助评估。
+            </p>
             <Step3VideoUpload />
           </div>
 
           <!-- 生成AI建议按钮 -->
           <div class="step-nav-hint">
-            <el-button type="primary" :loading="draftLoadingStep3" @click="handleGenerateAiSuggestionStep3">
+            <el-button
+              type="primary"
+              :loading="draftLoadingStep3"
+              @click="handleGenerateAiSuggestionStep3"
+            >
               <el-icon>
                 <ArrowRight />
               </el-icon>
               生成 AI 建议
             </el-button>
             <span class="step-nav-hint__tip">
-              {{ hasUploadedVideoFiles ? '生成 AI 建议' : '请上传音视频文件后再生成 AI 建议' }}
+              {{
+                hasUploadedVideoFiles
+                  ? "生成 AI 建议"
+                  : "请上传音视频文件后再生成 AI 建议"
+              }}
             </span>
           </div>
-          <div v-if="!videoAiSuggestion && files.video.length > 0" class="video-analysis-result-empty">
+          <div
+            v-if="!videoAiSuggestion && files.video.length > 0"
+            class="video-analysis-result-empty"
+          >
             <h3>音视频解析结果</h3>
             <div class="empty-content">
               <el-icon>
@@ -301,7 +326,31 @@ function handleStepClick(step: number) {
                   </el-icon>
                   音视频解析结果
                 </h4>
-                {{ videoAiSuggestion?.suggestion }}
+                <div style="display: flex; flex-direction: column; gap: 40px">
+                  <div
+                    v-for="(item, index) in videoResult"
+                    :key="index"
+                    style="display: flex; flex-direction: column"
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        font-size: 13px;
+                        color: #000;
+                        padding: 16px;
+                        border: 1px dashed #d8e6f2;
+                        border-radius: 6px;
+                      "
+                    >
+                      <div>涉及项目:{{ item.涉及项目 }}</div>
+                      <div>类型:{{ item.类型 }}</div>
+                      <div>提示内容:{{ item.提示内容 }}</div>
+                      <div>依据:{{ item.依据 }}</div>
+                    </div>
+                  </div>
+                </div>
                 <!-- <div class="ai-section__content">
 
                   <div class="ai-item">
@@ -317,11 +366,8 @@ function handleStepClick(step: number) {
                   </div>
                 </div> -->
               </div>
-
-
             </div>
           </div>
-
         </div>
       </div>
 
@@ -345,8 +391,12 @@ function handleStepClick(step: number) {
               <el-icon><ArrowLeft /></el-icon>
               返回修改
             </el-button> -->
-            <el-button type="primary" :disabled="result.gradedCount < assessmentItems.length" :loading="submitLoading"
-              @click="handleConfirm">
+            <el-button
+              type="primary"
+              :disabled="result.gradedCount < assessmentItems.length"
+              :loading="submitLoading"
+              @click="handleConfirm"
+            >
               <el-icon>
                 <CircleCheck />
               </el-icon>
