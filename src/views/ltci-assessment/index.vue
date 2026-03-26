@@ -246,9 +246,7 @@ function handleStepClick(step: number) {
             </el-button>
             <span class="step-nav-hint__tip">
               {{
-                hasUploadedRequiredFiles
-                  ? "生成 AI 建议后可进入事中/后建议"
-                  : "请至少上传自评表或医疗材料后再生成 AI 建议"
+       "请至少上传自评表或医疗材料后再生成 AI 建议"
               }}
             </span>
           </div>

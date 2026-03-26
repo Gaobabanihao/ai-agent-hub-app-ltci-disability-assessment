@@ -539,9 +539,7 @@ export function useAssessment() {
         aiSuggestion.value = result; // 保持兼容性
         console.log('medicalAiSuggestion.value', medicalAiSuggestion.value);
         
-        if (result?.suggestion) {
-          applyAiSuggestionToItems(result.suggestion);
-        }
+
         return result;
       } finally {
         aiSuggestionLoading.value = false;
@@ -568,9 +566,6 @@ export function useAssessment() {
       aiSuggestionLoading.value = true;
       try {
         aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
-        if (aiSuggestion.value?.suggestion) {
-          applyAiSuggestionToItems(aiSuggestion.value.suggestion);
-        }
         return aiSuggestion.value;
       } finally {
         aiSuggestionLoading.value = false;
