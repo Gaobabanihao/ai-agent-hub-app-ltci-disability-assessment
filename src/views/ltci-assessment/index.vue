@@ -12,6 +12,9 @@ import Step3VideoUpload from "./components/Step3VideoUpload.vue";
 import Step3AssessmentEntry from "./components/Step3AssessmentEntry.vue";
 import Step4ResultConfirm from "./components/Step4ResultConfirm.vue";
 
+// 音视频上传组件引用
+const videoUploadRef = ref<InstanceType<typeof Step3VideoUpload> | null>(null);
+
 defineOptions({ name: "LtciAssessmentPage" });
 
 const router = useRouter();
@@ -39,6 +42,14 @@ const result = computed(() => calculateResult());
 // 检查是否上传了自评表或医疗材料
 const hasUploadedRequiredFiles = computed(() => {
   return files.selfAssessment.length > 0 || files.medical.length > 0;
+});
+
+// 检查是否上传了音视频文件或输入了转译文本
+const hasVideoInput = computed(() => {
+  const hasVideoFile = files.video.length > 0;
+  const asrText = videoUploadRef.value?.getAsrText?.() || '';
+  const hasAsrText = asrText.trim() !== '';
+  return hasVideoFile || hasAsrText;
 });
 
 // 检查是否上传了音视频文件
@@ -113,8 +124,11 @@ async function handleGenerateAiSuggestionStep3() {
     return;
   }
 
-  if (!hasUploadedVideoFiles.value) {
-    ElMessage.warning("请上传音视频文件后再生成 AI 建议");
+  // 获取音视频转译文本
+  const asrText = videoUploadRef.value?.getAsrText?.() || '';
+  
+  if (!hasVideoInput.value) {
+    ElMessage.warning("请上传音视频文件或输入音视频转译文本后再生成 AI 建议");
     return;
   }
 
@@ -122,7 +136,7 @@ async function handleGenerateAiSuggestionStep3() {
   try {
     // 先创建草稿（如果尚未创建），再生成 AI 建议并自动写入评估项
     await ensureAssessmentDraft();
-    await generateCurrentAiSuggestion(3);
+    await generateCurrentAiSuggestion(3, asrText);
   } catch (error) {
     const message = error instanceof Error ? error.message : "生成 AI 建议失败";
     ElMessage.error(message);
@@ -272,7 +286,7 @@ function handleStepClick(step: number) {
         <div class="step-content">
           <!-- 音视频上传 -->
           <div class="video-upload-section">
-            <Step3VideoUpload />
+            <Step3VideoUpload ref="videoUploadRef" />
           </div>
 
           <!-- 生成AI建议按钮 -->
@@ -288,10 +302,10 @@ function handleStepClick(step: number) {
               生成 AI 建议
             </el-button>
             <span class="step-nav-hint__tip">
-              {{
-                hasUploadedVideoFiles
+              {{ 
+                hasVideoInput
                   ? "生成 AI 建议"
-                  : "请上传音视频文件后再生成 AI 建议"
+                  : "请上传音视频文件或输入音视频转译文本后再生成AI 建议"
               }}
             </span>
           </div>

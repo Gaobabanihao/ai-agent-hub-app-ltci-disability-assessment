@@ -10,7 +10,11 @@ const { files, addFiles, removeFile, generateCurrentAiSuggestion } = useAssessme
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const asrText = ref('');
-const uploadParsing = ref(false);
+
+// 暴露asrText给父组件
+defineExpose({
+  getAsrText: () => asrText.value
+});
 
 // 按分组维护 loading，避免一个文件组上传时阻塞其它组操作。
 const uploadLoading = reactive<Record<FileUploadType, boolean>>({
@@ -57,24 +61,7 @@ async function handleDelete(id: string) {
   }
 }
 
-async function handleUploadParsing() {
-  if (!asrText.value.trim()) {
-    ElMessage.warning('请输入音视频转译文本');
-    return;
-  }
-  
-  uploadParsing.value = true;
-  try {
-    // 调用与音视频下方的生成AI建议相同的接口，但传参为asrText
-    await generateCurrentAiSuggestion(3, asrText.value);
-    ElMessage.success('上传解析成功');
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '上传解析失败';
-    ElMessage.error(message);
-  } finally {
-    uploadParsing.value = false;
-  }
-}
+
 
 function getFileIcon(fileName: string) {
   const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
@@ -176,16 +163,7 @@ function getFileIcon(fileName: string) {
           class="asr-text-input"
         />
 
-        <div class="upload-section__footer">
-          <el-button
-            type="primary"
-            :loading="uploadParsing"
-            @click="handleUploadParsing"
-          >
-            <!-- <el-icon><Upload /></el-icon> -->
-            上传解析
-          </el-button>
-        </div>
+        <!-- 上传解析按钮已移除，通过生成AI建议按钮统一处理 -->
       </div>
     </div>
   </div>
