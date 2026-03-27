@@ -163,7 +163,7 @@ const columns: TableColumns[] = [
       return (
         <div style="display:flex;gap:6px;justify-content:center;">
           <ElButton size="small" type="primary" plain onClick={() => handleView(r)}>查看</ElButton>
-          <ElButton size="small" type="success" plain onClick={() => handleRestore(r)}>恢复</ElButton>
+          {/* <ElButton size="small" type="success" plain onClick={() => handleRestore(r)}>恢复</ElButton> */}
           <ElButton size="small" type="danger" plain onClick={() => handleDelete(r)}>删除</ElButton>
         </div>
       );

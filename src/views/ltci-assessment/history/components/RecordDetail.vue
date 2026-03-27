@@ -219,7 +219,113 @@ watch(
         </el-collapse>
       </div>
 
-      <!-- Section 4: File list -->
+      <!-- Section 4: 自评表结果 -->
+      <div class="detail-section">
+        <div class="detail-section__title">自评表结果</div>
+        <div v-if="officialDetail?.structExtract" class="ai-result">
+            <div class="self-assessment-content">
+              <div v-if="JSON.parse(officialDetail?.structExtract)['自评表结果']" class="self-assessment-result">
+                <div v-if="JSON.parse(officialDetail?.structExtract)['自评表结果']['ADL自评']" class="self-assessment-section">
+                  <h5 class="self-assessment-section__title">ADL自评</h5>
+                  <div class="self-assessment-section__content">
+                    <div v-for="(item, index) in JSON.parse(officialDetail?.structExtract)['自评表结果']['ADL自评']" :key="index"
+                      class="self-assessment-item">
+                      <span class="self-assessment-item__label">{{ item.项目 }}：</span>
+                      <span class="self-assessment-item__value">{{ item.自评结果 }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="JSON.parse(officialDetail?.structExtract)['自评表结果']['自评失能等级']" class="self-assessment-section">
+                  <h5 class="self-assessment-section__title">自评失能等级</h5>
+                  <div class="self-assessment-section__content">
+                    <span class="self-assessment-grade">{{ JSON.parse(officialDetail?.structExtract)['自评表结果']['自评失能等级'] }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+        
+        </div>
+        <div v-else class="file-empty">
+          暂无自评表结果
+        </div>
+      </div>
+
+      <!-- Section 5: 医疗材料结果 -->
+      <div class="detail-section">
+        <div class="detail-section__title">医疗材料结果</div>
+        <div v-if="officialDetail?.aiSuggestion" class="ai-result">
+          <div class="ai-section">
+            <div class="ai-section__content">
+              <div v-if="typeof officialDetail.aiSuggestion === 'string'" class="ai-item">
+                <div class="ai-item__content">{{ officialDetail.aiSuggestion }}</div>
+              </div>
+              <div v-else-if="typeof officialDetail.aiSuggestion === 'object' && officialDetail.aiSuggestion !== null" class="ai-item">
+                <div v-for="(value, key) in officialDetail.aiSuggestion" :key="key" class="ai-item__row">
+                  <div class="ai-item__label">{{ key }}：</div>
+                  <div v-if="typeof value === 'object' && value !== null" class="ai-item__value">
+                    <div v-for="(subValue, subKey) in value" :key="subKey" class="ai-item__subrow">
+                      <div class="ai-item__sublabel">{{ subKey }}：</div>
+                      <div v-if="Array.isArray(subValue)" class="ai-item__subvalue">
+                        <div v-for="(item, index) in subValue" :key="index" class="ai-item__array-item">
+                          {{ item }}
+                        </div>
+                      </div>
+                      <div v-else-if="typeof subValue === 'object' && subValue !== null" class="ai-item__subvalue">
+                        <div v-for="(subSubValue, subSubKey) in subValue" :key="subSubKey" class="ai-item__subsubrow">
+                          <div class="ai-item__subsublabel">{{ subSubKey }}：</div>
+                          <div class="ai-item__subsubvalue">{{ subSubValue }}</div>
+                        </div>
+                      </div>
+                      <div v-else class="ai-item__subvalue">{{ subValue }}</div>
+                    </div>
+                  </div>
+                  <div v-else class="ai-item__value">{{ value }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="file-empty">
+          暂无医疗材料结果
+        </div>
+      </div>
+
+      <!-- Section 6: 音视频结果 -->
+      <div class="detail-section">
+        <div class="detail-section__title">音视频结果</div>
+        <div v-if="officialDetail?.inProcess" class="ai-result">
+            <div style="display: flex; flex-direction: column; gap: 40px">
+                  <div
+                    v-for="(item, index) in JSON.parse(officialDetail?.inProcess)"
+                    :key="index"
+                    style="display: flex; flex-direction: column"
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        font-size: 13px;
+                        color: #000;
+                        padding: 16px;
+                        border: 1px dashed #d8e6f2;
+                        border-radius: 6px;
+                      "
+                    >
+                      <div>涉及项目:{{ item.涉及项目 }}</div>
+                      <div>类型:{{ item.类型 }}</div>
+                      <div>提示内容:{{ item.提示内容 }}</div>
+                      <div>依据:{{ item.依据 }}</div>
+                    </div>
+                  </div>
+                </div>
+        </div>
+        <div v-else class="file-empty">
+          暂无音视频结果
+        </div>
+      </div>
+
+      <!-- Section 7: File list -->
       <div class="detail-section">
         <div class="detail-section__title">上传材料</div>
         <div
@@ -438,6 +544,225 @@ watch(
   }
 }
 
+// ── AI Result ────────────────────────────────────────────────────────────────
+
+.ai-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ai-section {
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ai-section__content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ai-item {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: #333;
+    margin-left: 12px;
+  }
+
+  &__content {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  &__subrow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 12px;
+    margin-top: 4px;
+  }
+
+  &__sublabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+  }
+
+  &__subvalue {
+    font-size: 12px;
+    color: #333;
+    margin-left: 12px;
+  }
+
+  &__subsubrow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 12px;
+    margin-top: 2px;
+  }
+
+  &__subsublabel {
+    font-size: 11px;
+    font-weight: 500;
+    color: #888;
+  }
+
+  &__subsubvalue {
+    font-size: 11px;
+    color: #333;
+    margin-left: 12px;
+  }
+
+  &__array-item {
+    font-size: 12px;
+    color: #333;
+    margin-left: 12px;
+    margin-bottom: 4px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}.self-assessment-content {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.6;
+
+  /* 确保HTML内容中的元素能够正确渲染 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e6bb8;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 8px;
+  }
+
+  ul,
+  ol {
+    margin-left: 20px;
+    margin-bottom: 8px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+}
+
+.self-assessment-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.self-assessment-section {
+  background: #fff;
+  border: 1px solid #e8f4fc;
+  border-radius: 6px;
+  padding: 12px;
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e6bb8;
+    margin: 0 0 12px 0;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.self-assessment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 4px;
+
+  &__label {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 600;
+  }
+}
+
+.self-assessment-grade {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e6bb8;
+  padding: 8px 12px;
+  background: #f0f7ff;
+  border: 1px solid #b3d8ff;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.self-assessment-content {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+  }
+
+  th,
+  td {
+    border: 1px solid #e8f4fc;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f8fafc;
+    font-weight: 600;
+  }
+}
 // ── Footer ───────────────────────────────────────────────────────────────────
 
 .detail-footer {

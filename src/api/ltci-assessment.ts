@@ -266,6 +266,12 @@ export interface AssessmentDetailResult {
   assessment: AssessmentDetail;
   /** 评估项目列表。 */
   items: AssessmentDetailItem[];
+  /** 自评表结构化提取结果。 */
+  structExtract?: any;
+  /** 医疗材料AI建议结果。 */
+  aiSuggestion?: any;
+  /** 音视频处理结果。 */
+  inProcess?: any;
 }
 
 /** AI 建议结果数据。 */
