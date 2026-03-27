@@ -221,7 +221,7 @@ function handleBack() {
     </div>
 
     <!-- Grade summary banner -->
-    <div class="grade-banner" v-if="displayResult.gradedCount > 0">
+    <!-- <div class="grade-banner" v-if="displayResult.gradedCount > 0">
       <div class="grade-banner__item">
         <span class="grade-banner__value">{{ displayResult.gradedCount }}</span>
         <span class="grade-banner__label">已评估项目</span>
@@ -238,7 +238,7 @@ function handleBack() {
         </el-tag>
         <span class="grade-banner__label">失能等级</span>
       </div>
-    </div>
+    </div> -->
 
     <!-- Summary text content -->
     <!-- <div class="summary-body">
