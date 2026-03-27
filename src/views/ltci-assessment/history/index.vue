@@ -125,23 +125,23 @@ const columns: TableColumns[] = [
     cellRenderer: ({ row }) => <span>{maskIdCard((row as AssessmentRecord).idCard)}</span>,
   },
   { label: '评估日期', prop: 'assessmentDate', width: 120, align: 'center' },
-  {
-    label: '失能等级',
-    prop: 'disabilityLevel',
-    width: 110,
-    align: 'center',
-    cellRenderer: ({ row }) => {
-      const r = row as AssessmentRecord;
-      return (
-        <ElTag
-          type={levelTagType(r.disabilityLevel)}
-          effect={r.disabilityLevel.includes('重度') ? 'dark' : 'light'}
-        >
-          {r.disabilityLevel}
-        </ElTag>
-      );
-    },
-  },
+  // {
+  //   label: '失能等级',
+  //   prop: 'disabilityLevel',
+  //   width: 110,
+  //   align: 'center',
+  //   cellRenderer: ({ row }) => {
+  //     const r = row as AssessmentRecord;
+  //     return (
+  //       <ElTag
+  //         type={levelTagType(r.disabilityLevel)}
+  //         effect={r.disabilityLevel.includes('重度') ? 'dark' : 'light'}
+  //       >
+  //         {r.disabilityLevel}
+  //       </ElTag>
+  //     );
+  //   },
+  // },
   { label: '评估项数', prop: 'gradedCount', width: 90, align: 'center' },
   {
     label: '提交时间',

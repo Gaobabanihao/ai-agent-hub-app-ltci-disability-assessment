@@ -51,6 +51,41 @@ const levelTagType = computed(() => {
 const displayScore = computed(() => officialDetail.value?.assessment.finalScore ?? props.record?.avgGrade ?? 0);
 const displayGrade = computed(() => officialDetail.value?.assessment.finalGrade ?? props.record?.disabilityLevel ?? '未完成评估');
 const displayItemCount = computed(() => officialDetail.value?.assessment.itemCount ?? props.record?.gradedCount ?? 0);
+const aiContent = computed(() => {
+  const content = officialDetail.value?.content;
+  return content ? content : null;
+});
+// 解析医疗材料AI建议数据
+
+const smartAssessSummary = computed(() => {
+  const summary = aiContent.value?.smartAssessSummary;
+  if (!summary) return null;
+  try {
+    return JSON.parse(summary);
+  } catch {
+    return summary;
+  }
+});
+
+const preAssessTip = computed(() => {
+  const tip = aiContent.value?.preAssessTip;
+  if (!tip) return null;
+  try {
+    return JSON.parse(tip);
+  } catch {
+    return tip;
+  }
+});
+
+const keySuggest = computed(() => {
+  const suggest = aiContent.value?.keySuggest;
+  if (!suggest) return null;
+  try {
+    return JSON.parse(suggest);
+  } catch {
+    return suggest;
+  }
+});
 
 const displayFiles = computed(() => {
   if (officialFiles.value) {
@@ -173,7 +208,7 @@ watch(
       </div>
 
       <!-- Section 2: Result banner -->
-      <div class="detail-section">
+      <!-- <div class="detail-section">
         <div class="detail-section__title">评估结论</div>
         <div class="grade-banner" v-if="displayItemCount > 0">
           <div class="grade-banner__item">
@@ -194,7 +229,7 @@ watch(
           </div>
         </div>
         <div v-else class="grade-banner--empty">暂无评估数据</div>
-      </div>
+      </div> -->
 
       <!-- Section 3: Assessment items by category -->
       <div class="detail-section">
@@ -253,37 +288,124 @@ watch(
       <!-- Section 5: 医疗材料结果 -->
       <div class="detail-section">
         <div class="detail-section__title">医疗材料结果</div>
-        <div v-if="officialDetail?.aiSuggestion" class="ai-result">
+        <div v-if="officialDetail?.content" class="ai-result">
+       <div v-if="officialDetail?.content">
           <div class="ai-section">
-            <div class="ai-section__content">
-              <div v-if="typeof officialDetail.aiSuggestion === 'string'" class="ai-item">
-                <div class="ai-item__content">{{ officialDetail.aiSuggestion }}</div>
+            <h4 class="ai-section__title">
+              <el-icon>
+                <Document />
+              </el-icon>
+              智能评估结果摘要
+            </h4>
+            <div v-if="smartAssessSummary" class="ai-section__content">
+              <div v-if="smartAssessSummary['智能评估失能等级建议']" class="ai-item">
+                <div class="ai-item__label">失能等级建议：</div>
+                <div class="ai-item__value">{{ smartAssessSummary['智能评估失能等级建议'].区间 }}</div>
+                <div class="ai-item__desc">{{ smartAssessSummary['智能评估失能等级建议'].依据 }}</div>
               </div>
-              <div v-else-if="typeof officialDetail.aiSuggestion === 'object' && officialDetail.aiSuggestion !== null" class="ai-item">
-                <div v-for="(value, key) in officialDetail.aiSuggestion" :key="key" class="ai-item__row">
-                  <div class="ai-item__label">{{ key }}：</div>
-                  <div v-if="typeof value === 'object' && value !== null" class="ai-item__value">
-                    <div v-for="(subValue, subKey) in value" :key="subKey" class="ai-item__subrow">
-                      <div class="ai-item__sublabel">{{ subKey }}：</div>
-                      <div v-if="Array.isArray(subValue)" class="ai-item__subvalue">
-                        <div v-for="(item, index) in subValue" :key="index" class="ai-item__array-item">
-                          {{ item }}
-                        </div>
-                      </div>
-                      <div v-else-if="typeof subValue === 'object' && subValue !== null" class="ai-item__subvalue">
-                        <div v-for="(subSubValue, subSubKey) in subValue" :key="subSubKey" class="ai-item__subsubrow">
-                          <div class="ai-item__subsublabel">{{ subSubKey }}：</div>
-                          <div class="ai-item__subsubvalue">{{ subSubValue }}</div>
-                        </div>
-                      </div>
-                      <div v-else class="ai-item__subvalue">{{ subValue }}</div>
-                    </div>
+              <div v-if="smartAssessSummary['置信度提示']" class="ai-item">
+                <div class="ai-item__label">置信度：</div>
+                <div class="ai-item__value">{{ smartAssessSummary['置信度提示'].置信度 }}</div>
+                <div class="ai-item__desc">{{ smartAssessSummary['置信度提示'].置信度依据 }}</div>
+              </div>
+              <div v-if="smartAssessSummary['ADL雷达']" class="ai-item">
+                <div class="ai-item__label">ADL评估：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in smartAssessSummary['ADL雷达']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item.项目 }}：</span>
+                    <span class="ai-item__list-value">{{ item.评估 }}</span>
+                    <span class="ai-item__list-desc">{{ item.依据 }}</span>
                   </div>
-                  <div v-else class="ai-item__value">{{ value }}</div>
                 </div>
               </div>
             </div>
+            <div v-else class="ai-section__empty">
+              暂无智能评估结果摘要
+            </div>
           </div>
+
+          <!-- 系统预评估提示 -->
+          <div class="ai-section">
+            <h4 class="ai-section__title">
+              <el-icon>
+                <Warning />
+              </el-icon>
+              系统预评估提示
+            </h4>
+            <div v-if="preAssessTip" class="ai-section__content">
+              <div v-if="preAssessTip['重点评估关注事项']" class="ai-item">
+                <div class="ai-item__label">重点评估关注事项：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in preAssessTip['重点评估关注事项']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item.事项 }}</span>
+                    <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="preAssessTip['高风险标记'] && preAssessTip['高风险标记'].length > 0" class="ai-item">
+                <div class="ai-item__label">高风险标记：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in preAssessTip['高风险标记']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="preAssessTip['主要致失能推断原因'] && preAssessTip['主要致失能推断原因'].length > 0" class="ai-item">
+                <div class="ai-item__label">主要致失能推断原因：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in preAssessTip['主要致失能推断原因']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="ai-section__empty">
+              暂无系统预评估提示
+            </div>
+          </div>
+
+          <!-- 重点建议 -->
+          <div class="ai-section">
+            <h4 class="ai-section__title">
+              <el-icon>
+                <Lightning />
+              </el-icon>
+              重点建议
+            </h4>
+            <div v-if="keySuggest" class="ai-section__content">
+              <div v-if="keySuggest['建议重点核实的能力项']" class="ai-item">
+                <div class="ai-item__label">建议重点核实的能力项：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in keySuggest['建议重点核实的能力项']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item.能力项 }}</span>
+                    <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="keySuggest['个性化重点提问清单']" class="ai-item">
+                <div class="ai-item__label">个性化重点提问清单：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in keySuggest['个性化重点提问清单']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item.问题 }}</span>
+                    <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="keySuggest['建议现场/视频重点观察动作']" class="ai-item">
+                <div class="ai-item__label">建议现场/视频重点观察动作：</div>
+                <div class="ai-item__list">
+                  <div v-for="(item, index) in keySuggest['建议现场/视频重点观察动作']" :key="index" class="ai-item__list-item">
+                    <span class="ai-item__list-label">{{ item.观察动作 }}</span>
+                    <span class="ai-item__list-desc">{{ item.依据 }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="ai-section__empty">
+              暂无重点建议
+            </div>
+          </div>
+        </div>
         </div>
         <div v-else class="file-empty">
           暂无医疗材料结果
@@ -761,6 +883,118 @@ watch(
   th {
     background-color: #f8fafc;
     font-weight: 600;
+  }
+}
+.ai-section {
+  background: #f8fafc;
+  border: 1px solid #e8f4fc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e6bb8;
+    padding: 12px 16px;
+    background: #e8f4fc;
+    margin: 0;
+  }
+
+  &__content {
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+  }
+
+  &__loading {
+    padding: 24px 16px;
+    text-align: center;
+    color: #1e6bb8;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+}
+
+// ── AI Item ─────────────────────────────────────────────────────────────────
+
+.ai-item {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e8f4fc;
+    border-radius: 6px;
+  }
+
+  &__list-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+  }
+
+  &__list-value {
+    font-size: 13px;
+    color: #1e6bb8;
+    font-weight: 500;
+  }
+
+  .ai-item__list-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
   }
 }
 // ── Footer ───────────────────────────────────────────────────────────────────

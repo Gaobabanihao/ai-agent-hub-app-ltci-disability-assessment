@@ -155,7 +155,7 @@ async function handleConfirm() {
       // 历史记录接口是兼容能力，不影响正式提交结果。
     }
     setStep(4);
-    ElMessage.success(`评估结果已成功提交：${submitted.finalGrade}`);
+    ElMessage.success(`评估结果已成功提交`);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "提交失败，请稍后重试";

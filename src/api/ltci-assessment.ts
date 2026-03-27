@@ -272,6 +272,7 @@ export interface AssessmentDetailResult {
   aiSuggestion?: any;
   /** 音视频处理结果。 */
   inProcess?: any;
+  content?:any
 }
 
 /** AI 建议结果数据。 */

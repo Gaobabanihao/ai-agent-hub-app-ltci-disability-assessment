@@ -176,7 +176,7 @@ async function handleConfirm() {
     }
     setStep(4);
     emit('confirmed');
-    ElMessage.success(`评估结果已成功提交：${submitted.finalGrade}`);
+    ElMessage.success(`评估结果已成功提交`);
   } catch (error) {
     const message = error instanceof Error ? error.message : '提交失败，请稍后重试';
     ElMessage.error(message);
