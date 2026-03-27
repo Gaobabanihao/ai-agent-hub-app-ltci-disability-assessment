@@ -30,7 +30,7 @@ const vite = ({ mode }: ConfigEnv): UserConfigExport => {
       // 本地跨域代理 https://cn.vitejs.dev/config/server-options.html#server-proxy
       proxy: {
         '/ltci-api': {
-          target: 'http://10.47.51.198:8080/api',
+          target: 'http://47.116.113.217:7001/api',
           changeOrigin: true,
           // 前端加api，拦截接口到后端服务器
           rewrite: (path) => path.replace(/^\/ltci-api/, ''),

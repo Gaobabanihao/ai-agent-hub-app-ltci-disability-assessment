@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
+import { postForm } from '@/utils/requests';
 import type {
   AssessmentItem,
   AssessmentRecord,
@@ -9,6 +10,7 @@ import type {
   SelfAssessmentData,
 } from '../types';
 import {
+  BASE_URL,
   createAssessmentDraft,
   createInsuredPerson,
   deleteUploadedFile,
@@ -518,7 +520,7 @@ export function useAssessment() {
     });
   }
 
-  async function generateCurrentAiSuggestion(step?: number) {
+  async function generateCurrentAiSuggestion(step?: number, asrText?: string) {
     const draftId = await ensureAssessmentDraft();
     const selfAssessmentFile = files.selfAssessment[0]?.file;
     const medicalFile = files.medical[0]?.file;
@@ -545,27 +547,49 @@ export function useAssessment() {
         aiSuggestionLoading.value = false;
       }
     } else if (step === 3) {
-      // 第三步：仅需要音视频文件
-      if (!videoFile) {
-        throw new Error('请上传音视频文件后再生成 AI 建议');
+      // 第三步：需要音视频文件或asrText
+      if (!videoFile && !asrText) {
+        throw new Error('请上传音视频文件或输入音视频转译文本后再生成 AI 建议');
       }
-      // 传递音视频文件，不传递自评表和医疗材料
+      // 传递音视频文件或asrText，不传递自评表和医疗材料
       aiSuggestionLoading.value = true;
       try {
-        const result = await generateAiSuggestion2(draftId, undefined, undefined, videoFile);
-        // 存储音视频的AI建议
-        videoAiSuggestion.value = result;
+        if (asrText) {
+          // 调用接口传递asrText参数
+          const formData = new FormData();
+          formData.append('asrText', asrText);
+          const result = await postForm<AiSuggestionResult>(
+            `${ BASE_URL }/deepseek/inPocessAssessment/${ draftId }`,
+            formData
+          );
+          // 存储音视频的AI建议
+          videoAiSuggestion.value = result;
+        } else {
+          const result = await generateAiSuggestion2(draftId, undefined, undefined, videoFile);
+          // 存储音视频的AI建议
+          videoAiSuggestion.value = result;
+        }
       } finally {
         aiSuggestionLoading.value = false;
       }
     } else {
       // 默认行为：传递所有文件
-      if (!selfAssessmentFile && !medicalFile && !videoFile) {
-        throw new Error('请至少上传一种材料后再生成 AI 建议');
+      if (!selfAssessmentFile && !medicalFile && !videoFile && !asrText) {
+        throw new Error('请至少上传一种材料或输入音视频转译文本后再生成 AI 建议');
       }
       aiSuggestionLoading.value = true;
       try {
-        aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
+        if (asrText) {
+          // 调用接口传递asrText参数
+          const formData = new FormData();
+          formData.append('asrText', asrText);
+          aiSuggestion.value = await postForm<AiSuggestionResult>(
+            `${ BASE_URL }/deepseek/suggestion/${ draftId }`,
+            formData
+          );
+        } else {
+          aiSuggestion.value = await generateAiSuggestion(draftId, selfAssessmentFile, medicalFile, videoFile);
+        }
         return aiSuggestion.value;
       } finally {
         aiSuggestionLoading.value = false;

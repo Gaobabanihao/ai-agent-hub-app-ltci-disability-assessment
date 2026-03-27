@@ -272,10 +272,6 @@ function handleStepClick(step: number) {
         <div class="step-content">
           <!-- 音视频上传 -->
           <div class="video-upload-section">
-            <h3>音视频材料上传</h3>
-            <p class="video-upload-section__desc">
-              请上传评估过程中的音视频材料，用于辅助评估。
-            </p>
             <Step3VideoUpload />
           </div>
 

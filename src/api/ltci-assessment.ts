@@ -9,7 +9,7 @@ import type {
 } from '@/views/ltci-assessment/types';
 
 /** 长护险评估正式接口基础路径。 */
-const BASE_URL = '/ltci-api';
+export const BASE_URL = '/ltci-api';
 
 /**
  * 历史记录列表接口通用分页数据结构。
