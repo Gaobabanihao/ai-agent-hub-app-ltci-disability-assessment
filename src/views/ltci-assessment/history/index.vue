@@ -62,7 +62,7 @@ function handleReset() {
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 async function handleView(row: any) {
-  await store.fetchDetail(row.id);
+  await store.fetchDetail(row.assessmentId);
   detailRecord.value = store.currentRecord;
   detailVisible.value = true;
 }
@@ -94,7 +94,7 @@ async function handleDelete(row: any) {
         type: 'error',
       }
     );
-    await store.removeRecord(row.id);
+    await store.removeRecord(row.assessmentId);
     ElMessage.success('删除成功');
   } catch {
     // user cancelled

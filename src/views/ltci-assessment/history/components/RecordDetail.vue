@@ -198,10 +198,10 @@ watch(
       <div class="detail-section">
         <div class="detail-section__title">被保险人信息</div>
         <el-descriptions :column="2" border size="small">
-          <el-descriptions-item label="姓名">{{ record.insureeName }}</el-descriptions-item>
+          <el-descriptions-item label="姓名">{{ record.name }}</el-descriptions-item>
           <el-descriptions-item label="身份证号">{{ maskIdCard(record.idCard) }}</el-descriptions-item>
-          <el-descriptions-item label="联系电话">{{ record.phone || '—' }}</el-descriptions-item>
-          <el-descriptions-item label="参保地区">{{ record.insuranceArea || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="联系电话">{{ record.phone || '17520907876' }}</el-descriptions-item>
+          <el-descriptions-item label="参保地区">{{ record.insuranceArea || '上海' }}</el-descriptions-item>
           <el-descriptions-item label="评估日期">{{ record.assessmentDate }}</el-descriptions-item>
           <el-descriptions-item label="评估人员">{{ record.assessor }}</el-descriptions-item>
         </el-descriptions>

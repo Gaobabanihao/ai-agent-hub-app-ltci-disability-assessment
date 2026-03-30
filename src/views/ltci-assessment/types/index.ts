@@ -51,7 +51,7 @@ export interface FileMetaInfo {
 export interface AssessmentRecord {
   id: string;
   assessmentId?: number;
-  insureeName: string;
+  name: string;
   idCard: string;
   phone: string;
   insuranceArea: string;
