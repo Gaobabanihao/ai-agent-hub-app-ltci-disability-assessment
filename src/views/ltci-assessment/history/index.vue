@@ -34,7 +34,7 @@ const pageSize = ref(10);
 
 // ── Detail drawer ────────────────────────────────────────────────────────────
 const detailVisible = ref(false);
-const detailRecord = ref<AssessmentRecord | null>(null);
+const detailRecord = ref<any | null>(null);
 
 // ── Data fetching ────────────────────────────────────────────────────────────
 async function loadData() {
@@ -61,15 +61,15 @@ function handleReset() {
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
-async function handleView(row: AssessmentRecord) {
+async function handleView(row: any) {
   await store.fetchDetail(row.id);
   detailRecord.value = store.currentRecord;
   detailVisible.value = true;
 }
 
-function handleRestore(row: AssessmentRecord) {
+function handleRestore(row: any) {
   ElMessageBox.confirm(
-    `确认恢复「${row.insureeName}」的评估记录？当前评估内容将被覆盖。`,
+    `确认恢复「${row.name}」的评估记录？当前评估内容将被覆盖。`,
     '恢复评估',
     {
       confirmButtonText: '确认恢复',
@@ -83,10 +83,10 @@ function handleRestore(row: AssessmentRecord) {
   }).catch(() => {});
 }
 
-async function handleDelete(row: AssessmentRecord) {
+async function handleDelete(row: any) {
   try {
     await ElMessageBox.confirm(
-      `确认删除「${row.insureeName}」的评估记录？此操作不可撤销。`,
+      `确认删除「${row.name}」的评估记录？此操作不可撤销。`,
       '删除确认',
       {
         confirmButtonText: '确认删除',
@@ -117,40 +117,40 @@ function maskIdCard(idCard: string) {
 // ── Table columns ────────────────────────────────────────────────────────────
 const columns: TableColumns[] = [
   { type: 'index', label: '序号', width: 60, align: 'center' },
-  { label: '被保险人姓名', prop: 'insureeName', minWidth: 100 },
+  { label: '被保险人姓名', prop: 'name', minWidth: 100 },
   {
     label: '身份证号',
     prop: 'idCard',
     minWidth: 160,
-    cellRenderer: ({ row }) => <span>{maskIdCard((row as AssessmentRecord).idCard)}</span>,
+    cellRenderer: ({ row }) => <span>{maskIdCard((row as any).idCard)}</span>,
   },
   { label: '评估日期', prop: 'assessmentDate', width: 120, align: 'center' },
   // {
   //   label: '失能等级',
-  //   prop: 'disabilityLevel',
+  //   prop: 'finalGrade',
   //   width: 110,
   //   align: 'center',
   //   cellRenderer: ({ row }) => {
-  //     const r = row as AssessmentRecord;
+  //     const r = row as any;
   //     return (
   //       <ElTag
-  //         type={levelTagType(r.disabilityLevel)}
-  //         effect={r.disabilityLevel.includes('重度') ? 'dark' : 'light'}
+  //         type={levelTagType(r.finalGrade)}
+  //         effect={r.finalGrade.includes('重度') ? 'dark' : 'light'}
   //       >
-  //         {r.disabilityLevel}
+  //         {r.finalGrade}
   //       </ElTag>
   //     );
   //   },
   // },
-  { label: '评估项数', prop: 'gradedCount', width: 90, align: 'center' },
+  { label: '评估项数', prop: 'itemCount', width: 90, align: 'center' },
   {
     label: '提交时间',
       prop: 'submitTime',
       width: 170,
       align: 'center',
       cellRenderer: ({ row }) => {
-        const r = row as AssessmentRecord;
-        return <span>{new Date(r.submitTime || r.createdAt).toLocaleString('zh-CN')}</span>;
+        const r = row as any;
+        return <span>{new Date(r.submitTime).toLocaleString('zh-CN')}</span>;
       },
     },
   {

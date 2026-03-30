@@ -431,7 +431,16 @@ const HISTORY_BASE = '/mock-api/ltci-assessment';
 
 /** 获取评估历史列表。 */
 export function getAssessmentHistoryList(params: HistoryListParams) {
-  return get<PaginatedData<AssessmentRecord>>(`${ HISTORY_BASE }/history`, params);
+  // 转换参数格式
+  const transformedParams = {
+    name: params.insureeName || '',
+    finalGrade: params.disabilityLevel || '',
+    startDate: params.dateRange?.[0] || '',
+    endDate: params.dateRange?.[1] || '',
+    pageNum: params.page,
+    pageSize: params.pageSize
+  };
+  return post<{ result: AssessmentRecord[]; total: number }>(`${ BASE_URL }/assessments/list`, transformedParams);
 }
 
 /** 获取评估历史详情。 */
