@@ -31,10 +31,15 @@ const aiSuggestions = reactive<Record<string, AISuggestion>>({
 
 // 解析AI建议中的ADL雷达数据
 const adlRadarData = computed(() => {
-  if (!aiSuggestion.value?.suggestion) return {};
+  // 优先使用医疗材料和音视频的建议，避免覆盖问题
+  const suggestion = medicalAiSuggestion.value?.suggestion || 
+                   videoAiSuggestion.value?.suggestion || 
+                   aiSuggestion.value?.suggestion;
+  
+  if (!suggestion) return {};
   try {
-    const suggestion = JSON.parse(aiSuggestion.value.suggestion);
-    const adlRadar = suggestion['智能评估结果摘要']?.['ADL雷达'] || [];
+    const parsed = JSON.parse(suggestion);
+    const adlRadar = parsed['智能评估结果摘要']?.['ADL雷达'] || [];
     const adlMap: Record<string, { 评估: string; 依据: string }> = {};
     adlRadar.forEach((item: any) => {
       if (item.项目 && item.依据) {

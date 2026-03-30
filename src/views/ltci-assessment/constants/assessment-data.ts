@@ -95,7 +95,7 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
         selfItem: 'toilet3',
         gradeOptions: [
           { value: '0', label: '0分-需要极大地帮助或完全依赖他人' },
-          { value: '1', label: '需部分帮助(需他人帮忙整理衣裤、坐上/蹲上便器等)' },
+          { value: '1', label: '5分-需部分帮助(需他人帮忙整理衣裤、坐上/蹲上便器等)' },
           { value: '2', label: '10分-自理(能够使用厕纸、穿脱裤子等)' }
         ]
       },
@@ -159,10 +159,58 @@ export const ASSESSMENT_CATEGORIES: AssessmentCategoryDef[] = [
       { value: '4', label: '4分-时间观念(年、月)清楚，日期(或星期几)可相差一天' },
     ],
     items: [
-      { id: 'timeOrientation', number: '2.1', name: '时间定向', selfItem: 'timeOrientation' },
-      { id: 'personOrientation', number: '2.2', name: '人物定向', selfItem: 'personOrientation' },
-      { id: 'spaceOrientation', number: '2.3', name: '空间定向', selfItem: 'spaceOrientation' },
-      { id: 'memory', number: '2.4', name: '记忆力', selfItem: 'memory' },
+      { 
+        id: 'timeOrientation', 
+        number: '2.1', 
+        name: '时间定向', 
+        selfItem: 'timeOrientation',
+        gradeOptions: [
+          { value: '0', label: '0分-无时间观念' },
+          { value: '1', label: '1分-时间观念很差，年、月、日不清楚，可知上午、下午或白天、夜间' },
+          { value: '2', label: '2分-时间观念较差，年、月、日不清楚，可知上半年或下半年或季节' },
+          { value: '3', label: '3分-时间观念有些下降，年、月、日(或星期几)不能全部分清(相差两天或以上)' },
+          { value: '4', label: '4分-时间观念(年、月)清楚，日期(或星期几)可相差一天' }
+        ]
+      },
+      { 
+        id: 'personOrientation', 
+        number: '2.2', 
+        name: '人物定向', 
+        selfItem: 'personOrientation',
+        gradeOptions: [
+          { value: '0', label: '0分-不认识任何人(包括自己)' },
+          { value: '1', label: '1分-只认识自己或极少数日常同住的亲人或照护者等' },
+          { value: '2', label: '2分-能认识一半日常同住的亲人或照护者等，能称呼或知道关系等' },
+          { value: '3', label: '3分-能认识大部分共同生活居住的人，能称呼或知道关系' },
+          { value: '4', label: '4分-认识长期共同一起生活的人，能称呼并知道关系' }
+        ]
+      },
+      { 
+        id: 'spaceOrientation', 
+        number: '2.3', 
+        name: '空间定向', 
+        selfItem: 'spaceOrientation',
+        gradeOptions: [
+          { value: '0', label: '0分-不能单独外出，无空间观念' },
+          { value: '1', label: '1分-不能单独外出，少量知道自己居住或生活所在地的地址' },
+          { value: '2', label: '2分-不能单独外出，但知道较多有关自己日常生活的地址' },
+          { value: '3', label: '3分-不能单独外出，但能准确知道自己日常生活所在地的地址' },
+          { value: '4', label: '4分-能在日常生活范围内单独外出，如在日常居住小区内独自外出购物等' }
+        ]
+      },
+      { 
+        id: 'memory', 
+        number: '2.4', 
+        name: '记忆力', 
+        selfItem: 'memory',
+        gradeOptions: [
+          { value: '0', label: '0分-完全不能回忆即时信息，并且完全不能对既往事物进行正确的回忆' },
+          { value: '1', label: '1分-对既往事物能有少部分正确的回忆，没有近期记忆' },
+          { value: '2', label: '2分-能回忆大部分既往事物，记住1个词语' },
+          { value: '3', label: '3分-能回忆大部分既往事物，记住2个词语' },
+          { value: '4', label: '4分-能够完整回忆既往事物，记住3个词语' }
+        ]
+      },
     ],
   },
   {
